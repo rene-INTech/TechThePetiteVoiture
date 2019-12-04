@@ -13,7 +13,7 @@ Sirene			bit		P1.3
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
-Charge_L	    	equ 		0B0h+08h			;Charge_L = N_L + Nr	
+Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr	
 
 
 ;Saut de la table des vecteurs d'interruprions
@@ -24,7 +24,7 @@ Charge_L	    	equ 		0B0h+08h			;Charge_L = N_L + Nr
 					org		0030h
 debut:
 					MOV		SP,#2Fh		;La pile se trouve dans la mémoire octets
-					MOV		TMOD,#21h	;Timer 1 en mode 2 (UART) et timer 0 en mode 1 (Compteur 16 bits)
+					MOV		TMOD,#21h	;Timer 1 en mode 2 (compteur 8 bits autorechargé pour UART) et timer 0 en mode 1 (Compteur 16 bits pour la routine d'attente)
 					MOV		TH1,#0E6h	;Communication à 1200 Bds
 					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
 					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
@@ -39,19 +39,19 @@ LCD_Init:
 RPT_LCD_Init:	LCALL		Attente			;Répétition 3 fois
 					CLR		RS
 					CLR		RW
-					MOV		LCD,#30h				;Triple commande d'initialisation
+					MOV		LCD,#30h			;Triple commande d'initialisation
 					SETB		E
 					CLR		E
 JSQ_LCD_Init:	DJNZ		R0,RPT_LCD_Init
-					MOV		LCD,#38h				;2 lignes, carractères 8x5
+					MOV		LCD,#38h			;bus 8 bits, Affichage 2 lignes, carractères 8x5
 					LCALL		LCD_CODE
-					MOV		LCD,#08h          ;Display Off
+					MOV		LCD,#08h       ;Display Off, Cursor Off, Blink Off
 					LCALL		LCD_CODE
-					MOV		LCD,#01h          ;Display Clear
+					MOV		LCD,#01h       ;Display Clear
 					LCALL		LCD_CODE
-					MOV		LCD,#06h				;Entry Mode Set
+					MOV		LCD,#06h			;Pas de défilement, Ecriture de gauch à droite
 					LCALL		LCD_CODE
-					MOV		LCD,#0Ch          ;Display On
+					MOV		LCD,#0Ch       ;Display On, Cursor Off, Blink Off
 					LCALL		LCD_CODE
 fin_LCD_Init:	RET
 
@@ -109,17 +109,17 @@ fin_LCD_BF:		RET
 ;Utilise le Timer0 en mode 1 (compteur 16 bits)
 ;Modifie la valeur de C			
 Attente: 
-					PUSH		Acc			      
-					CLR		TR0
-					MOV		A,TL0					;1CM
+					PUSH		Acc			      		
+					CLR		TR0                     ;On arrête le Timer
+					MOV		A,TL0					;1CM  
 					ADD		A,#Charge_L			;1CM
 		      	MOV		TL0,A					;1CM
 			      MOV		A,TH0					;1CM
-			      ADDC		A,#Charge_H			;1CM
-			      MOV		TH0,A					;1CM
-		   	   CLR		TF0					;1CM
-		      	SETB		TR0					;1CM
-Attendre_TF0:	JNB		TF0,Attendre_TF0								
+			      ADDC		A,#Charge_H			;1CM   
+			      MOV		TH0,A					;1CM  ;On précharge le timer
+		   	   CLR		TF0					;1CM  ;On prépare le flag
+		      	SETB		TR0					;1CM  ;On démare le timer
+Attendre_TF0:	JNB		TF0,Attendre_TF0			;On attend le flag					
 					POP		Acc
 fin_Attente:	RET
 

@@ -196,7 +196,8 @@ ResData=0
 Startaddr=8000
 Lockedmode=0
 UseFlash=0
-Nb Obj=0
+Nb Obj=1
+d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.obj
 Nb Flash=0
 End Group Flashing
 Begin Group Bank switching
@@ -209,7 +210,9 @@ Genmacro=1
 Usebank=0
 Flip=0
 Noplm=1
-Nb Modules=0
+Nb Modules=2
+SECONDAIRE D:\TSP\ISE_PHY4501\TECHTHEPETITEVOITURE\SECONDAIRE\SECONDAIRE.OBJ 2147483647
+_WKRDTP_ D:\TSP\ISE_PHY4501\TECHTHEPETITEVOITURE\SECONDAIRE\SECONDAIRE.DTP 2147483647
 Nb Pages=1
 0 1 0
 End Group Bank switching
@@ -623,9 +626,9 @@ App Number=1
 Name=secondaire.aof
 Type=0
 Tool Ref=LX51
-Info Code=0
+Info Code=161
 Info XData=0
-Info Data=0
+Info Data=64
 Target Ref=80C51
 Format Ref=OMF51
 Use Local=0
@@ -644,7 +647,7 @@ Type=0
 Tool Ref=MA51
 Format Ref=
 Nb Dep=0
-Info Code=143
+Info Code=161
 Info Const=0
 Info XData=0
 Info PData=0
@@ -656,7 +659,7 @@ Do Link=1
 Do Translate=1
 Do Load=0
 Nb Nodes=0
-MakeDate=-542036933
+MakeDate=-542028793
 Node End
 Do Translate=1
 PostLinker Ref=
@@ -664,7 +667,7 @@ PostLinker Ref=
 
 [Desktop Files]
 Nb Desktop Files=1
-d:\tsp\ise(phy4501)\techthepetitevoiture\secondaire\secondaire.a51 (52,52-1102,430) 1
+d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.a51 (2147483647,2147483647-2147483647,2147483647) 17
 
 
 [Closed Files]
@@ -690,8 +693,8 @@ Nb Dim Views=13
 Debug=
 
 [Project Rect]
-(0,0-0,0)
+(2147483647,2147483647-2147483647,2147483647)
 
 [LastSel]
-LastAOF=d:\tsp\ise(phy4501)\techthepetitevoiture\secondaire\secondaire.aof
+LastAOF=d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.aof
 

@@ -13,7 +13,7 @@ Sirene			bit		P1.3
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
-Charge_L	    	equ 		0B0h+08h			;Charge_L = N_L + Nr	
+Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr	
 
 
 ;Saut de la table des vecteurs d'interruprions
@@ -23,7 +23,12 @@ Charge_L	    	equ 		0B0h+08h			;Charge_L = N_L + Nr
 					
 					org		0030h
 debut:
-
+					MOV		SP,#2Fh		;La pile se trouve dans la mémoire octets
+					MOV		TMOD,#21h	;Timer 1 en mode 2 (UART) et timer 0 en mode 1 (Compteur 16 bits)
+					MOV		TH1,#0E6h	;Communication à 1200 Bds
+					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
+					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
+					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
 fin:
 
 ;_______________________________________________
@@ -34,19 +39,19 @@ LCD_Init:
 RPT_LCD_Init:	LCALL		Attente			;Répétition 3 fois
 					CLR		RS
 					CLR		RW
-					MOV		LCD,#30h				;Triple commande d'initialisation
+					MOV		LCD,#30h			;Triple commande d'initialisation
 					SETB		E
 					CLR		E
 JSQ_LCD_Init:	DJNZ		R0,RPT_LCD_Init
-					MOV		LCD,#38h				;2 lignes, carractères 8x5
+					MOV		LCD,#38h			;bus 8 bits, Affichage 2 lignes, carractères 8x5
 					LCALL		LCD_CODE
-					MOV		LCD,#08h          ;Display Off
+					MOV		LCD,#08h       ;Display Off, Cursor Off, Blink Off
 					LCALL		LCD_CODE
-					MOV		LCD,#01h          ;Display Clear
+					MOV		LCD,#01h       ;Display Clear
 					LCALL		LCD_CODE
-					MOV		LCD,#06h				;Entry Mode Set
+					MOV		LCD,#06h			;Pas de défilement, Ecriture de gauch à droite
 					LCALL		LCD_CODE
-					MOV		LCD,#0Ch          ;Display On
+					MOV		LCD,#0Ch       ;Display On, Cursor Off, Blink Off
 					LCALL		LCD_CODE
 fin_LCD_Init:	RET
 

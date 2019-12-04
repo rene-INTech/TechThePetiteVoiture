@@ -52,11 +52,28 @@ Size1=80
 Size1=80
 PercentOf=0.500000
 [XData Segment]
-NbSegment=0
+NbSegment=2
+Start[0]=0
+End[0]=0
+Type[0]=0
+Start[1]=0
+End[1]=0
+Type[1]=0
 [Code Segment]
-NbSegment=0
+NbSegment=2
+Start[0]=0
+End[0]=4095
+Type[0]=0
+Start[1]=0
+End[1]=4095
+Type[1]=0
 [tracewatch]
 Nbtrace=0
 [AT89C51\UART]
 fEnable-1=0
 ParityCOM-1=0
+[Main Registers]
+cx=290
+cy=233
+x=332
+y=75
