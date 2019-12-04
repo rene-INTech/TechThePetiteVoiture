@@ -8,7 +8,7 @@ Le `Timer 0` est utilisé par la routine d'attente de 50 ms `Attente`.
 
 Le `Timer 1` est utilisé par l'UART
 
-La pile se trouve dans la mémoire octets `SP = 0x7F`
+La pile se trouve dans la mémoire octets `SP = 0x2F`
 
 #### Description des données
  | Nom | Type | Ressource | Description |
