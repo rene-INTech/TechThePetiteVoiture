@@ -33,6 +33,7 @@ debut:
 					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
 					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
+
 					
 					
 fin:				SJMP		fin
@@ -64,50 +65,50 @@ fin_LCD_Init:	RET
 ;___________________________________________	
 ;Routine permettant l'envoi d'une chaîne de carractères pointée par DPTR
 LCD_msg:
-					PUSH		Acc
+					PUSH		Acc				;On sauvegarde l'accumulateur
 					MOV		A,#0h
-					MOVC		A,@A+DPTR
-TQ_msg:		   JZ			FTQ_msg
+					MOVC		A,@A+DPTR      ;On place la valeur pointée par DPTR dans A
+TQ_msg:		   JZ			FTQ_msg        ;Tant que cette valeur n'est pas NULL
 					MOV		LCD,A
-					LCALL		LCD_Data
-					INC		DPTR
+					LCALL		LCD_Data       ;On envoie cette valeur dans le registre de données du LCD
+					INC		DPTR				;On pointe le carractère suivant
 					MOV		A,#0h	
-					MOVC		A,@A+DPTR
-					SJMP		TQ_msg
-FTQ_msg:			POP		Acc
+					MOVC		A,@A+DPTR      ;On place la valeur pointée par DPTR dans A
+					SJMP		TQ_msg			;Et on réitère
+FTQ_msg:			POP		Acc				;Puis on rétablit l'accumulateur
 					RET
 											
 ;___________________________________________
 ;Routine d'envoi de donnée (stockée dans le LATCH du port P2) au registre de contrôle du LCD	
 LCD_CODE:
-					LCALL		LCD_BF
-					CLR		RS
-					CLR		RW
+					LCALL		LCD_BF		;On attend le Busy Flag
+					CLR		RS          ;On accède au registre 0 (contrôle)
+					CLR		RW          ;en ecriture
 					SETB		E
-					CLR		E
+					CLR		E           ;front decendant de E pour valider l'envoi
 fin_LCD_CODE:	RET
 ;___________________________________________
 ;Routine d'envoi de données (stockée dans le LATCH du port P2) au registre d'affichage du LCD	
 LCD_DATA:
-					LCALL		LCD_BF
-					SETB		RS
-					CLR		RW
+					LCALL		LCD_BF		;On attend le Busy Flag
+					SETB		RS          ;On accède au registre 1 (données)
+					CLR		RW          ;en ecriture
 					SETB		E
-					CLR		E
+					CLR		E           ;front descendant de E pour valider l'envoi
 fin_LCD_DATA:	RET
 ;___________________________________________
 ;Routine d'attente d'état bas sur le Busy FLag du LCD		
 LCD_BF: 
-              	PUSH		LCD
+              	PUSH		LCD         ;On sauvegarde la valeur à écrire
 					MOV		LCD,#0FFh	;On passe en mode Input (High Z)
-					CLR		RS
-					SETB		RW
+					CLR		RS				;Accès au registre 0 (contrôle)
+					SETB		RW          ;en lecture
 RPT_BF:				
-					CLR		E
-					SETB		E
-JSQ_BF:			JB			BF,RPT_BF
-					CLR		E
-					POP		LCD
+					CLR		E				
+					SETB		E           ;Front montant de E pour valider la demande
+JSQ_BF:			JB			BF,RPT_BF   ;Jusqu'à ce que le Busy Flag soit bas
+					CLR		E           ;On met E au repos
+					POP		LCD			;On replace la valeur à écrire
 fin_LCD_BF:		RET
 
 ;___________________________________________	
