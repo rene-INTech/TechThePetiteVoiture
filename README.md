@@ -4,7 +4,7 @@ Projet du module Intégration de Système Electroniques (PHY4501)
 
 ## Ressources du Microcontrôleur Secondaire
 
-Le `Timer 0` est utilisé lors de l'initialisation du LCD.
+Le `Timer 0` est utilisé par la routine d'attente de 50 ms `Attente`.
 
 Le `Timer 1` est utilisé par l'UART
 
@@ -29,6 +29,7 @@ La pile se trouve dans la mémoire octets `SP = 0x7F`
  | nb_C | octet | | Compte le nombre de touches sur la cible centre |
  | nb_D | octet | | Compte le nombre de touches sur la cible droite |
  
+ ---
  
  ## Auteurs
   - bapt117
