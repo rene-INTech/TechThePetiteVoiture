@@ -9,6 +9,10 @@ RW					bit		P0.6
 E					bit		P0.7
 Laser				bit		P1.2
 Sirene			bit		P1.3
+nb_tours			data		7Fh
+nb_D				data		7Eh
+nb_C				data		7Dh
+nb_G				data		7Ch
 
 
 ;Ressources de la routine Attente
@@ -29,7 +33,9 @@ debut:
 					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
 					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
-fin:
+					
+					
+fin:				SJMP		fin
 
 ;_______________________________________________
 ; Routine d'initialisation du LCD
