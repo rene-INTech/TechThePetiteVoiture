@@ -1,0 +1,153 @@
+MACRO ASSEMBLER W_COMP_PAUSE                                11/15/19 17:07:30 PAGE     1
+
+
+WIN32 MACRO ASSEMBLER MA51 V06.04.19OBJECT MODULE PLACED IN C:\TP\PHY4501\TP\TP_2\W_COMP_PAUSE.OBJ
+ASSEMBLER INVOKED BY: MA51.EXE C:\TP\PHY4501\TP\TP_2\W_COMP_PAUSE.A51 OJ(C:\TP\PHY4501\TP\TP_2\W_COMP_PAUSE.OBJ) PIN(C:\RIDE\INC;C:\RIDE\INC\51) PIN(C:\RIDE\INC\51\) EP LINES SYNTAX(ASM51) MOD51 PR(C:\TP\PHY4501\TP\TP_2\W_COMP_PAUSE.LST) XR DB PW(80) RB(0) 
+
+LOC     OBJ           LINE    SOURCE
+                         1      ;W_Comp_Pause created by Remi Lamiaux and Baptiste Ghirardi 
+                         2     ;15/11/2019
+                         3     ;version 1
+                         4     
+  007F                   5     W1_L			DATA		7FH
+  007E                   6     W1_H			DATA		7EH
+  007D                   7     W2_L			DATA		7DH
+  007C                   8     W2_H			DATA		7CH
+  00B7                   9     INF			BIT		P3.7
+  00B6                  10     SUP			BIT		P3.6
+  00D5                  11     RES_RT		BIT		F0
+  0090                  12     W_IN			DATA		P1
+  0003                  13     MASQUE		EQU		00000011B
+                        14     
+                        15     
+                        16     
+  0000                  17     				ORG		0000H
+0000    802E            18     				SJMP		DEBUT
+                        19     				
+  0003                  20     				ORG		0003H
+0003    02004D          21     				LJMP		INTECH
+                        22     				
+  0030                  23     				ORG		0030H
+                        24     				
+                        25     DEBUT: 
+0030    758801          26     				MOV		TCON,#00000001B
+0033    75A881          27     				MOV		IE,#10000001B
+0036    C2B7            28     				CLR		INF
+0038    C2B6            29     				CLR		SUP
+                        30     		
+003A    80FE            31     FIN: 			SJMP		FIN
+                        32     
+                        33     
+                        34     ;Compare 2 nombres
+                        35     ;Paramètres: Adresses des octets de poids fort des nombres a comparer dans R0 et R1
+                        36     ;Retourne: 1 si ((R0))<((R1)) et 0 sinon, dans F0
+                        37     COMP: 
+003C    C0E0            38     				PUSH		ACC
+003E    E6              39     				MOV		A,@R0
+003F    C3              40     				CLR 		C
+0040    97              41     				SUBB		A,@R1
+0041    7005            42     SI: 			JNZ		FINSI
+0043    08              43     				INC		R0
+0044    09              44     				INC		R1
+0045    E6              45                 MOV		A,@R0
+0046    C3              46                 CLR		C
+0047    97              47                 SUBB		A,@R1
+0048    92D5            48     FINSI: 		MOV		RES_RT,C
+004A    D0E0            49     FINCOMP: 		POP		ACC
+004C    22              50     				RET
+                        51     				
+                        52     INTECH: 
+004D    85907D          53     				MOV		W2_L,W_IN
+0050    E590            54     				MOV		A,W_IN
+0052    03              55     				RR			A
+0053    03              56     				RR			A
+0054    F57C            57     				MOV		W2_H,A
+0056    03              58     				RR			A
+0057    03              59     				RR			A
+0058    F57F            60     				MOV		W1_L,A
+005A    03              61     				RR			A
+005B    03              62     				RR			A
+005C    F57E            63     				MOV		W1_H,A
+                        64     								
+005E    537D03          65     ANL W2_L , # 3 
+0061    537C03          66     ANL W2_H , # 3 
+0064    537F03          67     ANL W1_L , # 3 
+0067    537E03          68     ANL W1_H , # 3 
+                        69     				;Comparaison
+006A    787E            70     				MOV		R0,#W1_H
+006C    797C            71                 MOV		R1,#W2_H
+006E    12003C          72     				LCALL		COMP
+0071    A2D5            73     				MOV		C,RES_RT
+0073    92B7            74     				MOV		INF,C
+0075    B3              75     				CPL		C
+0076    92B6            76     				MOV		SUP,C
+0078    120080          77     				LCALL		PAUSE
+007B    C2B7            78     				CLR		INF
+007D    C2B6            79     				CLR		SUP
+007F    32              80     FIN_INTECH: 	RETI
+                        81     
+                        82     
+                        83     ;Permet d'attendre environ 5s. Utilise R0, R1, et R2.
+                        84     PAUSE: 
+0080    7827            85     				MOV		R0,#27H
+0082    79FF            86     RPT_T0: 		MOV		R1,#0FFH
+0084    7AFF            87     RPT_T1: 		MOV		R2,#0FFH
+0086    DAFE            88     RPT_T2: 		DJNZ		R2,RPT_T2
+0088    D9FA            89     				DJNZ		R1,RPT_T1
+008A    D8F6            90     				DJNZ		R0,RPT_T0
+008C    22              91     FIN_PAUSE: 			RET
+                        92     				
+                        93     
+                        94     				END  
+MACRO ASSEMBLER W_COMP_PAUSE                                11/15/19 17:07:30 PAGE     0
+
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES             REFERENCES
+
+P1 . . . . . . . .  D ADDR   0090H   A                          12 
+P3 . . . . . . . .  D ADDR   00B0H   A                          9 10 
+ACC. . . . . . . .  D ADDR   00E0H   A                          38 49 
+FINCOMP. . . . . .  C ADDR   004AH   A                          49# 
+MASQUE . . . . . .  N NUMB   0003h                              13# 65 66 67 68 
+W_IN . . . . . . .  D ADDR   0090H   A                          12# 53 54 
+IE . . . . . . . .  D ADDR   00A8H   A                          27 
+COMP . . . . . . .  C ADDR   003CH   A                          37# 72 
+RES_RT . . . . . .  B ADDR   00D0H.5 A                          11# 48 73 
+W1_H . . . . . . .  D ADDR   007EH   A                          6# 63 68 70 
+W2_H . . . . . . .  D ADDR   007CH   A                          8# 57 66 71 
+W1_L . . . . . . .  D ADDR   007FH   A                          5# 60 67 
+DEBUT. . . . . . .  C ADDR   0030H   A                          18 25# 
+W2_L . . . . . . .  D ADDR   007DH   A                          7# 53 65 
+TCON . . . . . . .  D ADDR   0088H   A                          26 
+F0 . . . . . . . .  B ADDR   00D0H.5 A                          11 
+FIN_INTECH . . . .  C ADDR   007FH   A                          80# 
+SUP. . . . . . . .  B ADDR   00B0H.6 A                          10# 29 76 79 
+RPT_T0 . . . . . .  C ADDR   0082H   A                          86# 90 
+FINSI. . . . . . .  C ADDR   0048H   A                          42 48# 
+FIN_PAUSE. . . . .  C ADDR   008CH   A                          91# 
+RPT_T1 . . . . . .  C ADDR   0084H   A                          87# 89 
+RPT_T2 . . . . . .  C ADDR   0086H   A                          88# 
+INTECH . . . . . .  C ADDR   004DH   A                          21 52# 
+SI . . . . . . . .  C ADDR   0041H   A                          42# 
+FIN. . . . . . . .  C ADDR   003AH   A                          31# 
+INF. . . . . . . .  B ADDR   00B0H.7 A                          9# 28 74 78 
+PAUSE. . . . . . .  C ADDR   0080H   A                          77 84# 
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     98    ----
+   XDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+REGISTER BANK(S) USED : 0 
+
+ASSEMBLY COMPLETE.   0 WARNING(S)   0 ERROR(S)

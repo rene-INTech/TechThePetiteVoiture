@@ -1,0 +1,63 @@
+MACRO ASSEMBLER W_ADD                                       11/13/19 11:04:15 PAGE     1
+
+
+WIN32 MACRO ASSEMBLER MA51 V06.04.19OBJECT MODULE PLACED IN C:\TP\PHY4501\TP\W_ADD.OBJ
+ASSEMBLER INVOKED BY: MA51.EXE C:\TP\PHY4501\TP\W_ADD.A51 OJ(C:\TP\PHY4501\TP\W_ADD.OBJ) PIN(C:\RIDE\INC;C:\RIDE\INC\51) PIN(C:\RIDE\INC\51\) EP LINES SYNTAX(ASM51) PR(C:\TP\PHY4501\TP\W_ADD.LST) XR DB PW(80) RB(0) 
+
+LOC     OBJ           LINE    SOURCE
+                         1     ;W_Add
+                         2     ;created by Remi Lamiaux and Baptiste Ghirardi 
+                         3     ;13/11/2019
+                         4     ;version 1
+                         5     
+  007F                   6     W1_L			DATA		7FH
+  007E                   7     W1_H			DATA		7EH
+  007D                   8     W2_L			DATA		7DH
+  007C                   9     W2_H			DATA		7CH
+  REG                   10     RES_L			EQU		R0
+  REG                   11     RES_H			EQU		R1
+                        12     
+  0000                  13     				ORG		0000H
+                        14     				
+                        15     DEBUT: 
+0000    E57F            16     				MOV		A,W1_L
+0002    257D            17     				ADD		A,W2_L
+0004    F8              18     MOV R0 , A 
+0005    E57E            19     				MOV		A,W1_H
+0007    357C            20     				ADDC		A,W2_H
+0009    F9              21     MOV R1 , A 
+000A    80F4            22     FIN: 			SJMP		DEBUT
+                        23     
+                        24     				END
+MACRO ASSEMBLER W_ADD                                       11/13/19 11:04:15 PAGE     0
+
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES             REFERENCES
+
+W1_H . . . . . . .  D ADDR   007EH   A                          7# 19 
+W2_H . . . . . . .  D ADDR   007CH   A                          9# 20 
+RES_H. . . . . . .    REG    R1                                 11# 21 
+W1_L . . . . . . .  D ADDR   007FH   A                          6# 16 
+DEBUT. . . . . . .  C ADDR   0000H   A                          15# 22 
+W2_L . . . . . . .  D ADDR   007DH   A                          8# 17 
+RES_L. . . . . . .    REG    R0                                 10# 18 
+FIN. . . . . . . .  C ADDR   000AH   A                          22# 
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     12    ----
+   XDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+REGISTER BANK(S) USED : 0 
+
+ASSEMBLY COMPLETE.   0 WARNING(S)   0 ERROR(S)

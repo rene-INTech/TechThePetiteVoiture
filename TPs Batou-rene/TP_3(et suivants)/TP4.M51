@@ -1,0 +1,175 @@
+LX51 CODE BANKING LINKER/LOCATOR V05.01.33                                     12/04/19  09:41:50
+WIN32 LX51 CODE BANKING LINKER/LOCATOR V05.01.33,  INVOKED BY:
+LX51 c:\tp\phy4501\tp\tp_3\serie_rec.obj , c:\tp\phy4501\tp\tp_3\tp4.DTP TO(c:\tp\phy4501\tp\tp_3&
+\tp4.AOF) PR(c:\tp\phy4501\tp\tp_3\tp4.m51) XSIZE(65536) CSIZE(65536) RS(256) RSI(128) IX MAP 
+
+
+INPUT MODULES INCLUDED
+  C:\TP\PHY4501\TP\TP_3\SERIE_REC.OBJ(SERIE_REC)
+  C:\TP\PHY4501\TP\TP_3\TP4.DTP(_WKRDTP_)
+
+
+LINK MAP OF MODULE: C:\TP\PHY4501\TP\TP_3\TP4.AOF (TP4)
+
+    TYPE     BASE       LENGTH    RELOCATION     SEGMENT NAME
+    ----     ----       ------    ----------     ------------
+
+    * * * * * * *   DATA/IDATA    M E M O R Y   * * * * * * *
+    REG      0000H      0008H     ABSOLUTE       "REG BANK 0"
+
+    * * * * * * *   CODE          M E M O R Y   * * * * * * *
+    CODE     0000H      0002H     ABSOLUTE       
+             0002H      002EH                    *** GAP ***
+    CODE     0030H      00BFH     ABSOLUTE       
+
+EXECUTABLE SUMMARY:
+-------------------
+    Total INTERNAL RAM storage requirement:  0008H (8)
+    Total EXTERNAL RAM storage requirement:  0000H (0)
+    Total     CODE     storage requirement:  00C1H (193)
+Note:  Summary does not include dynamic stack requirements
+
+
+REFERENCE MAP OF MODULE: C:\TP\PHY4501\TP\TP_3\TP4.AOF (TP4)
+
+SEGMENT                           BI_GROUP            DT_GROUP             ID_GROUP             XD_GROUP
+  +--> CALLED SEGMENT          START    LENGTH     START    LENGTH     START    LENGTH     START    LENGTH
+--------------------------------------------------------------------------------------
+
+SYMBOL TABLE FOR C:\TP\PHY4501\TP\TP_3\TP4.AOF(SERIE_REC)
+----------------------------------------------------------
+
+    VALUE              TYPE               NAME
+    -----              ----               ----
+
+	-------            MODULE             SERIE_REC
+	C:0054H            SYMBOL             FIN_SI_NEW
+	C:0092H            SYMBOL             FIN_LCD_INIT
+	C:0049H            SYMBOL             SI_NEW
+	B:0097H            SYMBOL             E
+	B:0095H            SYMBOL             RS
+	C:0062H            SYMBOL             LCD_INIT
+	C:00D7H            SYMBOL             DEBUT_ATTENTE
+	C:00BFH            SYMBOL             FIN_LCD_DATA
+	C:0059H            SYMBOL             FIN_SI_TMP
+	B:00A7H            SYMBOL             BF
+	C:00B3H            SYMBOL             FIN_LCD_CODE
+	B:0096H            SYMBOL             RW
+	B:00D5H            SYMBOL             NEW
+	C:0098H            SYMBOL             TQ_MSG
+	C:00B4H            SYMBOL             LCD_DATA
+	C:0054H            SYMBOL             SI_TMP
+	C:00A8H            SYMBOL             LCD_CODE
+	C:0060H            SYMBOL             JSQ
+	C:00EEH            SYMBOL             FIN_ATTENTE
+	C:00A5H            SYMBOL             FTQ_MSG
+	C:0072H            SYMBOL             JSQ_LCD_INIT
+	C:0060H            SYMBOL             FIN_SINON_TMP
+	D:00A0H            SYMBOL             LCD
+	C:0042H            SYMBOL             ATT_RI1
+	C:0030H            SYMBOL             DEBUT
+	C:00CDH            SYMBOL             JSQ_BF
+	C:00D5H            SYMBOL             ATTENTE
+	C:00D4H            SYMBOL             FIN_LCD_BF
+	C:0042H            SYMBOL             RPT
+	C:00E9H            SYMBOL             ATTENDRE
+	C:005BH            SYMBOL             SINON_TMP
+	C:0093H            SYMBOL             LCD_MSG
+	C:00C0H            SYMBOL             LCD_BF
+	C:0064H            SYMBOL             RPT_LCD_INIT
+	C:00C9H            SYMBOL             RPT_BF
+	C:0062H            SYMBOL             FIN
+	C:0000H            LINE#              18
+	C:0030H            LINE#              23
+	C:0033H            LINE#              24
+	C:0036H            LINE#              25
+	C:0039H            LINE#              26
+	C:003CH            LINE#              27
+	C:003FH            LINE#              28
+	C:0042H            LINE#              30
+	C:0045H            LINE#              31
+	C:0047H            LINE#              32
+	C:0049H            LINE#              33
+	C:004CH            LINE#              34
+	C:004FH            LINE#              35
+	C:0052H            LINE#              36
+	C:0054H            LINE#              38
+	C:0057H            LINE#              39
+	C:0059H            LINE#              40
+	C:005BH            LINE#              42
+	C:005DH            LINE#              43
+	C:0060H            LINE#              46
+	C:0062H            LINE#              55
+	C:0064H            LINE#              56
+	C:0067H            LINE#              57
+	C:0069H            LINE#              58
+	C:006BH            LINE#              59
+	C:006EH            LINE#              60
+	C:0070H            LINE#              61
+	C:0072H            LINE#              62
+	C:0074H            LINE#              63
+	C:0077H            LINE#              64
+	C:007AH            LINE#              65
+	C:007DH            LINE#              66
+	C:0080H            LINE#              67
+	C:0083H            LINE#              68
+	C:0086H            LINE#              69
+	C:0089H            LINE#              70
+	C:008CH            LINE#              71
+	C:008FH            LINE#              72
+	C:0092H            LINE#              73
+	C:0093H            LINE#              77
+	C:0095H            LINE#              78
+	C:0097H            LINE#              79
+	C:0098H            LINE#              80
+	C:009AH            LINE#              81
+	C:009CH            LINE#              82
+	C:009FH            LINE#              83
+	C:00A0H            LINE#              84
+	C:00A2H            LINE#              85
+	C:00A3H            LINE#              86
+	C:00A5H            LINE#              87
+	C:00A7H            LINE#              88
+	C:00A8H            LINE#              92
+	C:00ABH            LINE#              93
+	C:00ADH            LINE#              94
+	C:00AFH            LINE#              95
+	C:00B1H            LINE#              96
+	C:00B3H            LINE#              97
+	C:00B4H            LINE#              100
+	C:00B7H            LINE#              101
+	C:00B9H            LINE#              102
+	C:00BBH            LINE#              103
+	C:00BDH            LINE#              104
+	C:00BFH            LINE#              105
+	C:00C0H            LINE#              108
+	C:00C2H            LINE#              109
+	C:00C5H            LINE#              110
+	C:00C7H            LINE#              111
+	C:00C9H            LINE#              113
+	C:00CBH            LINE#              114
+	C:00CDH            LINE#              115
+	C:00D0H            LINE#              116
+	C:00D2H            LINE#              117
+	C:00D4H            LINE#              118
+	C:00D5H            LINE#              123
+	C:00D7H            LINE#              125
+	C:00D9H            LINE#              126
+	C:00DBH            LINE#              127
+	C:00DDH            LINE#              128
+	C:00DFH            LINE#              129
+	C:00E1H            LINE#              130
+	C:00E3H            LINE#              131
+	C:00E5H            LINE#              132
+	C:00E7H            LINE#              133
+	C:00E9H            LINE#              134
+	C:00ECH            LINE#              135
+	C:00EEH            LINE#              136
+	-------            ENDMOD             SERIE_REC
+	N:00E8H            PUBLIC             TIM1_INIT
+	N:0010H            PUBLIC             SIZEBUFPRINTF
+	N:0100H            PUBLIC             XSTACKLEN
+	N:0001H            PUBLIC             _LINKERSYMB_DUMMY_
+
+LINK/LOCATE RUN COMPLETE,  NO ERROR FOUND.
+

@@ -1,0 +1,228 @@
+MACRO ASSEMBLER SERIE_REC                                   12/04/19 09:41:50 PAGE     1
+
+
+WIN32 MACRO ASSEMBLER MA51 V06.04.19OBJECT MODULE PLACED IN C:\TP\PHY4501\TP\TP_3\SERIE_REC.OBJ
+ASSEMBLER INVOKED BY: MA51.EXE C:\TP\PHY4501\TP\TP_3\SERIE_REC.A51 OJ(C:\TP\PHY4501\TP\TP_3\SERIE_REC.OBJ) PIN(C:\RIDE\INC;C:\RIDE\INC\51) PIN(C:\RIDE\INC\51\) EP LINES SYNTAX(ASM51) MOD51 PR(C:\TP\PHY4501\TP\TP_3\SERIE_REC.LST) XR DB PW(80) RB(0) 
+
+LOC     OBJ           LINE    SOURCE
+                         1     ;Serie_Rec
+                         2     ;Created by Rémi Lamiaux and Baptiste Ghirardi
+                         3     ;29/11/2019
+                         4     ;version 1.0
+                         5     
+  00A7                   6     BF					BIT					P2.7
+  0095                   7     RS    			BIT					P1.5 
+  0096                   8     RW					BIT					P1.6
+  0097                   9     E					BIT					P1.7
+  00D5                  10     NEW				BIT					F0						;Vaut 1 si on doit effacer l'écran
+  00A0                  11     LCD				DATA					P2
+                        12     
+                        13     ;Ressources de la routine Attente
+  003C                  14     CHARGE_H	    	EQU 			      03CH
+  00B8                  15     CHARGE_L	    	EQU 		       	0B0H+08H				;Charge_L = N_L + Nr	
+                        16     
+  0000                  17     					ORG					0000H
+0000    802E            18     					SJMP					DEBUT
+                        19     					
+  0030                  20     					ORG					0030H
+                        21     			
+                        22     DEBUT: 
+0030    758DE6          23     					MOV					TH1,#0E6H
+0033    759850          24     					MOV					SCON,#50H
+0036    758921          25     					MOV					TMOD,#21H
+0039    758840          26     					MOV					TCON,#40H
+003C    75812F          27     					MOV					SP,#2FH
+003F    120062          28     					LCALL					LCD_INIT
+                        29     RPT: 
+0042    3098FD          30     ATT_RI1:  		JNB					RI,ATT_RI1
+0045    C298            31     					CLR					RI
+0047    E599            32     					MOV					A,SBUF
+0049    30D508          33     SI_NEW: 			JNB					NEW,FIN_SI_NEW
+004C    75A001          34     					MOV					LCD,#01H          ;Display Clear
+004F    1200A8          35     					LCALL					LCD_CODE
+0052    C2D5            36     					CLR					NEW
+                        37     FIN_SI_NEW: 
+0054    B40D04          38     SI_TMP: 			CJNE					A,#0DH,SINON_TMP
+0057    D2D5            39     					SETB					NEW
+0059    8005            40     FIN_SI_TMP: 		SJMP					FIN_SINON_TMP
+                        41     SINON_TMP: 
+005B    F5A0            42     					MOV					LCD,A
+005D    1200B4          43     					LCALL					LCD_DATA
+                        44     FIN_SINON_TMP: 
+                        45     			
+0060    80E0            46     JSQ: 				SJMP					RPT
+                        47     FIN: 		
+                        48     
+                        49     
+                        50     
+                        51     ;_______________________________________________
+                        52     ; Routine d'initialisation
+                        53     ; ressource: R0 compteur (variable locale)
+                        54     LCD_INIT: 
+0062    7803            55     					MOV					R0,#3
+0064    1200D5          56     RPT_LCD_INIT: 	LCALL					ATTENTE
+0067    C295            57     					CLR					RS
+0069    C296            58     					CLR					RW
+006B    75A030          59     					MOV					LCD,#30H				;Triple commande d'initialisation
+006E    D297            60     					SETB					E
+0070    C297            61     					CLR					E
+0072    D8F0            62     JSQ_LCD_INIT: 	DJNZ					R0,RPT_LCD_INIT
+0074    75A038          63     					MOV					LCD,#38H				;2 lignes, carractères 8x5
+0077    1200A8          64     					LCALL					LCD_CODE
+007A    75A008          65     					MOV					LCD,#08H          ;Display Off
+007D    1200A8          66     					LCALL					LCD_CODE
+0080    75A001          67     					MOV					LCD,#01H          ;Display Clear
+0083    1200A8          68     					LCALL					LCD_CODE
+0086    75A006          69     					MOV					LCD,#06H				;Entry Mode Set
+0089    1200A8          70     					LCALL					LCD_CODE
+008C    75A00C          71     					MOV					LCD,#0CH          ;Display On
+008F    1200A8          72     					LCALL					LCD_CODE
+0092    22              73     FIN_LCD_INIT: 	RET
+                        74     
+                        75     ;___________________________________________	
+                        76     LCD_MSG: 
+0093    C0E0            77     					PUSH					ACC
+0095    7400            78     					MOV					A,#0H
+0097    93              79     					MOVC					A,@A+DPTR
+0098    600B            80     TQ_MSG: 		   JZ						FTQ_MSG
+009A    F5A0            81     					MOV					LCD,A
+009C    1200B4          82     					LCALL					LCD_DATA
+009F    A3              83     					INC					DPTR
+00A0    7400            84     					MOV					A,#0H	
+00A2    93              85     					MOVC					A,@A+DPTR
+00A3    80F3            86     					SJMP					TQ_MSG
+00A5    D0E0            87     FTQ_MSG: 			POP					ACC
+00A7    22              88     					RET
+                        89     											
+                        90     ;___________________________________________	
+                        91     LCD_CODE: 
+00A8    1200C0          92     					LCALL					LCD_BF
+00AB    C295            93     					CLR					RS
+00AD    C296            94     					CLR					RW
+00AF    D297            95     					SETB					E
+00B1    C297            96     					CLR					E
+00B3    22              97     FIN_LCD_CODE: 	RET
+                        98     ;___________________________________________	
+                        99     LCD_DATA: 
+00B4    1200C0         100     					LCALL					LCD_BF
+00B7    D295           101     					SETB					RS
+00B9    C296           102     					CLR					RW
+00BB    D297           103     					SETB					E
+00BD    C297           104     					CLR					E
+00BF    22             105     FIN_LCD_DATA: 	RET
+                       106     ;___________________________________________		
+                       107     LCD_BF: 
+00C0    C0A0           108     					PUSH					LCD
+00C2    75A0FF         109     					MOV					LCD,#0FFH
+00C5    C295           110     					CLR					RS
+00C7    D296           111     					SETB					RW
+                       112     RPT_BF: 				
+00C9    C297           113     					CLR					E
+00CB    D297           114     					SETB					E
+00CD    20A7F9         115     JSQ_BF: 			JB						BF,RPT_BF
+00D0    C297           116     					CLR					E
+00D2    D0A0           117     					POP					LCD
+00D4    22             118     FIN_LCD_BF: 		RET
+                       119     
+                       120     ;___________________________________________	
+                       121     ;Routine d'attente de 50ms			
+                       122     ATTENTE:  
+00D5    C0E0           123     				PUSH			ACC		
+                       124     DEBUT_ATTENTE:  	      
+00D7    C28C           125     				CLR			TR0
+00D9    E58A           126     				MOV			A,TL0					;1CM
+00DB    24B8           127     ADD A , # 184 
+00DD    F58A           128     		      MOV			TL0,A					;1CM
+00DF    E58C           129     		      MOV			A,TH0					;1CM
+00E1    343C           130     ADDC A , # 60 
+00E3    F58C           131     		      MOV			TH0,A					;1CM
+00E5    C28D           132     		      CLR			TF0					;1CM
+00E7    D28C           133     		      SETB			TR0					;1CM
+00E9    308DFD         134     ATTENDRE: 	JNB			TF0,ATTENDRE								
+00EC    D0E0           135     				POP			ACC
+00EE    22             136     FIN_ATTENTE: RET
+                       137     
+                       138     			END  
+MACRO ASSEMBLER SERIE_REC                                   12/04/19 09:41:50 PAGE     0
+
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES             REFERENCES
+
+FIN_SI_NEW . . . .  C ADDR   0054H   A                          33 37# 
+P1 . . . . . . . .  D ADDR   0090H   A                          7 8 9 
+FIN_LCD_INIT . . .  C ADDR   0092H   A                          73# 
+P2 . . . . . . . .  D ADDR   00A0H   A                          6 11 
+SP . . . . . . . .  D ADDR   0081H   A                          27 
+SI_NEW . . . . . .  C ADDR   0049H   A                          33# 
+E. . . . . . . . .  B ADDR   0090H.7 A                          9# 60 61 95 96 103 
+                                                                104 113 114 116 
+RS . . . . . . . .  B ADDR   0090H.5 A                          7# 57 93 101 110 
+                                                                
+LCD_INIT . . . . .  C ADDR   0062H   A                          28 54# 
+ACC. . . . . . . .  D ADDR   00E0H   A                          77 87 123 135 
+DEBUT_ATTENTE. . .  C ADDR   00D7H   A                          124# 
+FIN_LCD_DATA . . .  C ADDR   00BFH   A                          105# 
+FIN_SI_TMP . . . .  C ADDR   0059H   A                          40# 
+BF . . . . . . . .  B ADDR   00A0H.7 A                          6# 115 
+FIN_LCD_CODE . . .  C ADDR   00B3H   A                          97# 
+RW . . . . . . . .  B ADDR   0090H.6 A                          8# 58 94 102 111 
+                                                                
+NEW. . . . . . . .  B ADDR   00D0H.5 A                          10# 33 36 39 
+TF0. . . . . . . .  B ADDR   0088H.5 A                          132 134 
+TQ_MSG . . . . . .  C ADDR   0098H   A                          80# 86 
+LCD_DATA . . . . .  C ADDR   00B4H   A                          43 82 99# 
+SI_TMP . . . . . .  C ADDR   0054H   A                          38# 
+TH0. . . . . . . .  D ADDR   008CH   A                          129 131 
+LCD_CODE . . . . .  C ADDR   00A8H   A                          35 64 66 68 70 72 
+                                                                91# 
+TH1. . . . . . . .  D ADDR   008DH   A                          23 
+JSQ. . . . . . . .  C ADDR   0060H   A                          46# 
+SBUF . . . . . . .  D ADDR   0099H   A                          32 
+TL0. . . . . . . .  D ADDR   008AH   A                          126 128 
+FIN_ATTENTE. . . .  C ADDR   00EEH   A                          136# 
+FTQ_MSG. . . . . .  C ADDR   00A5H   A                          80 87# 
+CHARGE_H . . . . .  N NUMB   003Ch                              14# 130 
+JSQ_LCD_INIT . . .  C ADDR   0072H   A                          62# 
+FIN_SINON_TMP. . .  C ADDR   0060H   A                          40 44# 
+LCD. . . . . . . .  D ADDR   00A0H   A                          11# 34 42 59 63 65 
+                                                                67 69 71 81 108 109 
+                                                                117 
+SCON . . . . . . .  D ADDR   0098H   A                          24 
+ATT_RI1. . . . . .  C ADDR   0042H   A                          30# 
+DEBUT. . . . . . .  C ADDR   0030H   A                          18 22# 
+TMOD . . . . . . .  D ADDR   0089H   A                          25 
+TCON . . . . . . .  D ADDR   0088H   A                          26 
+JSQ_BF . . . . . .  C ADDR   00CDH   A                          115# 
+ATTENTE. . . . . .  C ADDR   00D5H   A                          56 122# 
+CHARGE_L . . . . .  N NUMB   00B8h                              15# 127 
+FIN_LCD_BF . . . .  C ADDR   00D4H   A                          118# 
+RPT. . . . . . . .  C ADDR   0042H   A                          29# 46 
+TR0. . . . . . . .  B ADDR   0088H.4 A                          125 133 
+F0 . . . . . . . .  B ADDR   00D0H.5 A                          10 
+ATTENDRE . . . . .  C ADDR   00E9H   A                          134# 
+SINON_TMP. . . . .  C ADDR   005BH   A                          38 41# 
+LCD_MSG. . . . . .  C ADDR   0093H   A                          76# 
+LCD_BF . . . . . .  C ADDR   00C0H   A                          92 100 107# 
+RPT_LCD_INIT . . .  C ADDR   0064H   A                          56# 62 
+RI . . . . . . . .  B ADDR   0098H.0 A                          30 31 
+RPT_BF . . . . . .  C ADDR   00C9H   A                          112# 115 
+FIN. . . . . . . .  C ADDR   0062H   A                          47# 
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    193    ----
+   XDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+REGISTER BANK(S) USED : 0 
+
+ASSEMBLY COMPLETE.   0 WARNING(S)   0 ERROR(S)

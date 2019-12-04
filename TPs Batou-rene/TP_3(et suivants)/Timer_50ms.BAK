@@ -1,0 +1,28 @@
+;Timer_50ms
+;Created by Lamiaux Rémy and Ghirardi Baptiste
+;20/11/2019
+;version 1
+
+LED			bit			P3.0 
+Charge_H	   equ 			03Ch
+Charge_L	   equ 			0B0h+0Eh				;Charge_L = N_L + Nr
+			
+	
+   			org			0000h
+debut: 
+		      MOV			TMOD,#01h
+		      
+
+RPT:
+				MOV			A,TL0
+				ADD			A,#Charge_L
+		      MOV			TL0,A
+		      MOV			A,TH0
+		      ADDC			A,#Charge_H
+		      MOV			TH0,A
+		      CLR			TF0
+		      SETB			TR0
+Attendre:	JNB			TF0,Attendre
+				CLR			TR0
+ 				CPL			LED
+JSQ: 			SJMP			RPT	  			

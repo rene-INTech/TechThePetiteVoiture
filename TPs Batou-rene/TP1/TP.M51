@@ -1,0 +1,75 @@
+LX51 CODE BANKING LINKER/LOCATOR V05.01.33                                     10/23/19  13:24:06
+WIN32 LX51 CODE BANKING LINKER/LOCATOR V05.01.33,  INVOKED BY:
+LX51 c:\tp\phy4501\tp\adresse.obj , c:\tp\phy4501\tp\tp.DTP TO(c:\tp\phy4501\tp\tp.AOF) PR(c:\tp\&
+phy4501\tp\tp.m51) XSIZE(65536) CSIZE(65536) RS(256) RSI(128) IX MAP 
+
+
+INPUT MODULES INCLUDED
+  C:\TP\PHY4501\TP\ADRESSE.OBJ(ADRESSE)
+  C:\TP\PHY4501\TP\TP.DTP(_WKRDTP_)
+
+
+LINK MAP OF MODULE: C:\TP\PHY4501\TP\TP.AOF (TP)
+
+    TYPE     BASE       LENGTH    RELOCATION     SEGMENT NAME
+    ----     ----       ------    ----------     ------------
+
+    * * * * * * *   DATA/IDATA    M E M O R Y   * * * * * * *
+    REG      0000H      0008H     ABSOLUTE       "REG BANK 0"
+
+    * * * * * * *   CODE          M E M O R Y   * * * * * * *
+    CODE     0000H      001EH     ABSOLUTE       
+
+EXECUTABLE SUMMARY:
+-------------------
+    Total INTERNAL RAM storage requirement:  0008H (8)
+    Total EXTERNAL RAM storage requirement:  0000H (0)
+    Total     CODE     storage requirement:  001EH (30)
+Note:  Summary does not include dynamic stack requirements
+
+
+REFERENCE MAP OF MODULE: C:\TP\PHY4501\TP\TP.AOF (TP)
+
+SEGMENT                           BI_GROUP            DT_GROUP             ID_GROUP             XD_GROUP
+  +--> CALLED SEGMENT          START    LENGTH     START    LENGTH     START    LENGTH     START    LENGTH
+--------------------------------------------------------------------------------------
+
+SYMBOL TABLE FOR C:\TP\PHY4501\TP\TP.AOF(ADRESSE)
+--------------------------------------------------
+
+    VALUE              TYPE               NAME
+    -----              ----               ----
+
+	-------            MODULE             ADRESSE
+	D:0090H            SYMBOL             VAL
+	D:00B0H            SYMBOL             CAPTEUR_T
+	C:0000H            SYMBOL             DEBUT
+	D:0080H            SYMBOL             ADR
+	D:0031H            SYMBOL             TEMP_C
+	D:002FH            SYMBOL             HUMIDITE
+	D:0030H            SYMBOL             TEMP_F
+	D:00A0H            SYMBOL             CAPTEUR_H
+	C:001CH            SYMBOL             FIN
+	C:0000H            LINE#              19
+	C:0003H            LINE#              20
+	C:0006H            LINE#              21
+	C:0008H            LINE#              22
+	C:000AH            LINE#              23
+	C:000DH            LINE#              24
+	C:000EH            LINE#              25
+	C:0011H            LINE#              26
+	C:0012H            LINE#              27
+	C:0014H            LINE#              28
+	C:0016H            LINE#              29
+	C:0017H            LINE#              30
+	C:0019H            LINE#              31
+	C:001AH            LINE#              32
+	C:001CH            LINE#              33
+	-------            ENDMOD             ADRESSE
+	N:00E8H            PUBLIC             TIM1_INIT
+	N:0010H            PUBLIC             SIZEBUFPRINTF
+	N:0100H            PUBLIC             XSTACKLEN
+	N:0001H            PUBLIC             _LINKERSYMB_DUMMY_
+
+LINK/LOCATE RUN COMPLETE,  NO ERROR FOUND.
+

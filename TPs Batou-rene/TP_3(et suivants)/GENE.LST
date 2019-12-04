@@ -1,0 +1,122 @@
+MACRO ASSEMBLER GENE                                        11/20/19 12:36:48 PAGE     1
+
+
+WIN32 MACRO ASSEMBLER MA51 V06.04.19OBJECT MODULE PLACED IN C:\TP\PHY4501\TP\TP_3\GENE.OBJ
+ASSEMBLER INVOKED BY: MA51.EXE C:\TP\PHY4501\TP\TP_3\GENE.A51 OJ(C:\TP\PHY4501\TP\TP_3\GENE.OBJ) PIN(C:\RIDE\INC;C:\RIDE\INC\51) PIN(C:\RIDE\INC\51\) EP LINES SYNTAX(ASM51) MOD51 PR(C:\TP\PHY4501\TP\TP_3\GENE.LST) XR DB PW(80) RB(0) 
+
+LOC     OBJ           LINE    SOURCE
+                         1     ;Gene
+                         2     ;Created by Lamiaux Rémy and Ghirardi Baptiste
+                         3     ;20/11/2019
+                         4     ;version 1
+                         5     
+  00B0                   6     GENE			BIT			P3.0 
+  00FF                   7     V0_INIT_H   EQU 			0FFH
+  0042                   8     V0_INIT_L   EQU 			038H+0AH				;V0_Init_L = N_L + Nr
+  00FC                   9     V1_INIT_H   EQU 			0FCH
+  00EA                  10     V1_INIT_L   EQU 			0E0H+0AH						
+  0000                  11     ETAPE			BIT			0B
+                        12     
+  0000                  13        			ORG			0000H
+0000    802E            14     				SJMP			DEBUT
+                        15     				
+  000B                  16     				ORG			000BH
+000B    02004F          17     				LJMP			INT_TIMER0
+                        18     				
+  0030                  19     				ORG			0030H
+                        20        			
+                        21     DEBUT:  
+0030    75810F          22     				MOV			SP,#0FH
+0033    758901          23     		      MOV			TMOD,#01H
+0036    75A882          24     		      MOV			IE,#10000010B
+0039    C2B0            25     		      CLR			GENE
+003B    D200            26     		      SETB			ETAPE
+                        27     		      
+003D    E58A            28     		      MOV			A,TL0					
+003F    24EA            29     ADD A , # 234 
+0041    F58A            30     		      MOV			TL0,A					
+0043    E58C            31     		      MOV			A,TH0					
+0045    34FC            32     ADDC A , # 252 
+0047    F58C            33     		      MOV			TH0,A					
+0049    C28D            34     		      CLR			TF0					
+004B    D28C            35     		      SETB			TR0					
+                        36     
+004D    80FE            37     FIN:   	   SJMP			FIN
+                        38     
+                        39     
+                        40     INT_TIMER0:  
+                        41     
+004F    30000A          42     SI: 			JNB		   ETAPE,SINON
+0052    7842            43     MOV R0 , # 66 
+0054    79FF            44     MOV R1 , # 255 
+0056    C200            45     		      CLR			ETAPE
+0058    D2B0            46     		      SETB			GENE
+005A    8008            47     FIN_SI: 		SJMP			FIN_SINON      
+                        48     SINON: 
+005C    78EA            49     MOV R0 , # 234 
+005E    79FC            50     MOV R1 , # 252 
+0060    D200            51     		      SETB			ETAPE
+0062    C2B0            52     		      CLR			GENE
+                        53     FIN_SINON: 				
+0064    C0E0            54     				PUSH			ACC				
+0066    C28C            55     				CLR			TR0					
+0068    E58A            56     				MOV			A,TL0					;1CM
+006A    28              57     				ADD			A,R0					;1CM
+006B    F58A            58     		      MOV			TL0,A					;1CM
+006D    E58C            59     		      MOV			A,TH0					;1CM
+006F    39              60     		      ADDC			A,R1					;1CM
+0070    F58C            61     		      MOV			TH0,A					;1CM
+0072    C28D            62     		      CLR			TF0					;1CM
+0074    D0E0            63     		      POP			ACC					;2CM
+0076    D28C            64     		      SETB			TR0					;1CM
+                        65     FIN_INT_TIMER0: 	
+0078    32              66     				RETI
+                        67     
+                        68     				END
+MACRO ASSEMBLER GENE                                        11/20/19 12:36:48 PAGE     0
+
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES             REFERENCES
+
+V0_INIT_H. . . . .  N NUMB   00FFh                              7# 44 
+V1_INIT_H. . . . .  N NUMB   00FCh                              9# 32 50 
+FIN_SINON. . . . .  C ADDR   0064H   A                          47 53# 
+P3 . . . . . . . .  D ADDR   00B0H   A                          6 
+SP . . . . . . . .  D ADDR   0081H   A                          22 
+V0_INIT_L. . . . .  N NUMB   0042h                              8# 43 
+V1_INIT_L. . . . .  N NUMB   00EAh                              10# 29 49 
+SINON. . . . . . .  C ADDR   005CH   A                          42 48# 
+ACC. . . . . . . .  D ADDR   00E0H   A                          54 63 
+TF0. . . . . . . .  B ADDR   0088H.5 A                          34 62 
+TH0. . . . . . . .  D ADDR   008CH   A                          31 33 59 61 
+IE . . . . . . . .  D ADDR   00A8H   A                          24 
+ETAPE. . . . . . .  B ADDR   0020H.0 A                          11# 26 42 45 51 
+TL0. . . . . . . .  D ADDR   008AH   A                          28 30 56 58 
+DEBUT. . . . . . .  C ADDR   0030H   A                          14 21# 
+TMOD . . . . . . .  D ADDR   0089H   A                          23 
+TR0. . . . . . . .  B ADDR   0088H.4 A                          35 55 64 
+FIN_INT_TIMER0 . .  C ADDR   0078H   A                          65# 
+FIN_SI . . . . . .  C ADDR   005AH   A                          47# 
+INT_TIMER0 . . . .  C ADDR   004FH   A                          17 40# 
+SI . . . . . . . .  C ADDR   004FH   A                          42# 
+FIN. . . . . . . .  C ADDR   004DH   A                          37# 
+GENE . . . . . . .  B ADDR   00B0H.0 A                          6# 25 46 52 
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     78    ----
+   XDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+REGISTER BANK(S) USED : 0 
+
+ASSEMBLY COMPLETE.   0 WARNING(S)   0 ERROR(S)

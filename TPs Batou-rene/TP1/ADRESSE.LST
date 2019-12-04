@@ -1,0 +1,81 @@
+MACRO ASSEMBLER ADRESSE                                     10/23/19 13:24:06 PAGE     1
+
+
+WIN32 MACRO ASSEMBLER MA51 V06.04.19OBJECT MODULE PLACED IN C:\TP\PHY4501\TP\ADRESSE.OBJ
+ASSEMBLER INVOKED BY: MA51.EXE C:\TP\PHY4501\TP\ADRESSE.A51 OJ(C:\TP\PHY4501\TP\ADRESSE.OBJ) PIN(C:\RIDE\INC;C:\RIDE\INC\51) PIN(C:\RIDE\INC\51\) EP LINES SYNTAX(ASM51) MOD51 PR(C:\TP\PHY4501\TP\ADRESSE.LST) XR DB PW(80) RB(0) 
+
+LOC     OBJ           LINE    SOURCE
+                         1     ;Adresse
+                         2     ;created by Rémi and Baptiste
+                         3     ;23/10/2019
+                         4     ;version 0
+                         5     
+  0080                   6     ADR			DATA		P0
+  0090                   7     VAL			DATA		P1
+  00A0                   8     CAPTEUR_H	DATA		P2
+  00B0                   9     CAPTEUR_T	DATA		P3
+  002F                  10     HUMIDITE		DATA		2FH
+  0030                  11     TEMP_F		DATA		30H
+  0031                  12     TEMP_C		DATA		31H
+  REG                   13     FLAG			EQU		R1
+  002F                  14     OFFSET		EQU		2FH
+                        15     
+  0000                  16     				ORG		0000H
+                        17     				
+                        18     DEBUT: 
+0000    85A02F          19     				MOV		HUMIDITE,CAPTEUR_H
+0003    85B030          20     				MOV		TEMP_F,CAPTEUR_T
+0006    E530            21     				MOV		A,TEMP_F
+0008    9420            22     				SUBB		A,#32
+000A    75F009          23     				MOV		B,#9
+000D    84              24     				DIV		AB 
+000E    75F005          25     				MOV		B,#5
+0011    A4              26     				MUL		AB
+0012    F531            27     				MOV		TEMP_C,A
+0014    A980            28     MOV R1 , ADR 
+0016    E9              29     MOV A , R1 
+0017    242F            30     ADD A , # 47 
+0019    F8              31     				MOV		R0,A
+001A    8690            32     				MOV		VAL,@R0
+001C    80E2            33     FIN: 			SJMP		DEBUT
+                        34     				END
+MACRO ASSEMBLER ADRESSE                                     10/23/19 13:24:06 PAGE     0
+
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES             REFERENCES
+
+P0 . . . . . . . .  D ADDR   0080H   A                          6 
+P1 . . . . . . . .  D ADDR   0090H   A                          7 
+B. . . . . . . . .  D ADDR   00F0H   A                          23 25 
+P2 . . . . . . . .  D ADDR   00A0H   A                          8 
+VAL. . . . . . . .  D ADDR   0090H   A                          7# 32 
+P3 . . . . . . . .  D ADDR   00B0H   A                          9 
+OFFSET . . . . . .  N NUMB   002Fh                              14# 30 
+CAPTEUR_T. . . . .  D ADDR   00B0H   A                          9# 20 
+DEBUT. . . . . . .  C ADDR   0000H   A                          18# 33 
+ADR. . . . . . . .  D ADDR   0080H   A                          6# 28 
+TEMP_C . . . . . .  D ADDR   0031H   A                          12# 27 
+HUMIDITE . . . . .  D ADDR   002FH   A                          10# 19 
+FLAG . . . . . . .    REG    R1                                 13# 28 29 
+TEMP_F . . . . . .  D ADDR   0030H   A                          11# 20 21 
+CAPTEUR_H. . . . .  D ADDR   00A0H   A                          8# 19 
+FIN. . . . . . . .  C ADDR   001CH   A                          33# 
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     30    ----
+   XDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+REGISTER BANK(S) USED : 0 
+
+ASSEMBLY COMPLETE.   0 WARNING(S)   0 ERROR(S)

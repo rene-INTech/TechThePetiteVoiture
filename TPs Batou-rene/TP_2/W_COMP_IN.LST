@@ -1,0 +1,118 @@
+MACRO ASSEMBLER W_COMP_IN                                   11/15/19 15:46:39 PAGE     1
+
+
+WIN32 MACRO ASSEMBLER MA51 V06.04.19OBJECT MODULE PLACED IN C:\TP\PHY4501\TP\W_COMP_IN.OBJ
+ASSEMBLER INVOKED BY: MA51.EXE C:\TP\PHY4501\TP\W_COMP_IN.A51 OJ(C:\TP\PHY4501\TP\W_COMP_IN.OBJ) PIN(C:\RIDE\INC;C:\RIDE\INC\51) PIN(C:\RIDE\INC\51\) EP LINES SYNTAX(ASM51) MOD51 PR(C:\TP\PHY4501\TP\W_COMP_IN.LST) XR DB PW(80) RB(0) 
+
+LOC     OBJ           LINE    SOURCE
+                         1     ;W_Comp_Rt
+                         2     ;created by Remi Lamiaux and Baptiste Ghirardi 
+                         3     ;15/11/2019
+                         4     ;version 1
+                         5     
+  007F                   6     W1_L			DATA		7FH
+  007E                   7     W1_H			DATA		7EH
+  007D                   8     W2_L			DATA		7DH
+  007C                   9     W2_H			DATA		7CH
+  00B7                  10     INF			BIT		P3.7
+  00B6                  11     SUP			BIT		P3.6
+  00D5                  12     RES_RT		BIT		F0
+  0090                  13     W_IN			DATA		P1
+  0003                  14     MASQUE		EQU		00000011B
+                        15     
+                        16     
+  0000                  17     				ORG		0000H
+                        18     				
+                        19     DEBUT: 		
+                        20     				;Affectation de W1 et W2
+0000    85907D          21     				MOV		W2_L,W_IN
+0003    E590            22     				MOV		A,W_IN
+0005    03              23     				RR			A
+0006    03              24     				RR			A
+0007    F57C            25     				MOV		W2_H,A
+0009    03              26     				RR			A
+000A    03              27     				RR			A
+000B    F57F            28     				MOV		W1_L,A
+000D    03              29     				RR			A
+000E    03              30     				RR			A
+000F    F57E            31     				MOV		W1_H,A
+                        32     				
+0011    537D03          33     ANL W2_L , # 3 
+0014    537C03          34     ANL W2_H , # 3 
+0017    537F03          35     ANL W1_L , # 3 
+001A    537E03          36     ANL W1_H , # 3 
+                        37     
+                        38     				
+                        39     				;Comparaison
+001D    787E            40     				MOV		R0,#W1_H
+001F    797C            41                 MOV		R1,#W2_H
+0021    12002D          42     				LCALL		COMP
+0024    A2D5            43     				MOV		C,RES_RT
+0026    92B7            44     				MOV		INF,C
+0028    B3              45     				CPL		C
+0029    92B6            46     				MOV		SUP,C
+002B    80D3            47     FIN: 			SJMP		DEBUT
+                        48     
+                        49     
+                        50     ;Compare 2 nombres
+                        51     ;Paramètres: Adresses des octets de poids fort des nombres a comparer dans R0 et R1
+                        52     ;Retourne: 1 si ((R0))<((R1)) et 0 sinon, dans F0
+                        53     COMP: 
+002D    C0E0            54     				PUSH		ACC
+002F    E6              55     				MOV		A,@R0
+0030    C3              56     				CLR 		C
+0031    97              57     				SUBB		A,@R1
+0032    7005            58     SI: 			JNZ		FINSI
+0034    08              59     				INC		R0
+0035    09              60     				INC		R1
+0036    E6              61                 MOV		A,@R0
+0037    C3              62                 CLR		C
+0038    97              63                 SUBB		A,@R1
+0039    92D5            64     FINSI: 		MOV		RES_RT,C
+003B    D0E0            65     FINCOMP: 		POP		ACC
+003D    22              66     				RET
+                        67     
+                        68     				END 
+MACRO ASSEMBLER W_COMP_IN                                   11/15/19 15:46:39 PAGE     0
+
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES             REFERENCES
+
+P1 . . . . . . . .  D ADDR   0090H   A                          13 
+P3 . . . . . . . .  D ADDR   00B0H   A                          10 11 
+ACC. . . . . . . .  D ADDR   00E0H   A                          54 65 
+FINCOMP. . . . . .  C ADDR   003BH   A                          65# 
+MASQUE . . . . . .  N NUMB   0003h                              14# 33 34 35 36 
+W_IN . . . . . . .  D ADDR   0090H   A                          13# 21 22 
+COMP . . . . . . .  C ADDR   002DH   A                          42 53# 
+RES_RT . . . . . .  B ADDR   00D0H.5 A                          12# 43 64 
+W1_H . . . . . . .  D ADDR   007EH   A                          7# 31 36 40 
+W2_H . . . . . . .  D ADDR   007CH   A                          9# 25 34 41 
+W1_L . . . . . . .  D ADDR   007FH   A                          6# 28 35 
+DEBUT. . . . . . .  C ADDR   0000H   A                          19# 47 
+W2_L . . . . . . .  D ADDR   007DH   A                          8# 21 33 
+F0 . . . . . . . .  B ADDR   00D0H.5 A                          12 
+SUP. . . . . . . .  B ADDR   00B0H.6 A                          11# 46 
+FINSI. . . . . . .  C ADDR   0039H   A                          58 64# 
+SI . . . . . . . .  C ADDR   0032H   A                          58# 
+FIN. . . . . . . .  C ADDR   002BH   A                          47# 
+INF. . . . . . . .  B ADDR   00B0H.7 A                          10# 44 
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     62    ----
+   XDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+REGISTER BANK(S) USED : 0 
+
+ASSEMBLY COMPLETE.   0 WARNING(S)   0 ERROR(S)
