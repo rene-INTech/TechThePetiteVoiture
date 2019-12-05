@@ -37,8 +37,8 @@ Pile
  | nb_D | octet | 0x7C | Compte le nombre de touches sur la cible droite | 
   
  ## Auteurs
-  - bapt117
-  - elomhs
-  - gwenser
-  - rene-INTech
+  - [Baptou](https://github.com/bapt117)
+  - [Elo](https://github.com/elomhs)
+  - [El Gwengo](https://github.com/gwenser)
+  - [René](https://github.com/rene-INTech)
  
