@@ -647,7 +647,7 @@ Type=0
 Tool Ref=MA51
 Format Ref=
 Nb Dep=0
-Info Code=161
+Info Code=190
 Info Const=0
 Info XData=0
 Info PData=0
@@ -659,16 +659,14 @@ Do Link=1
 Do Translate=1
 Do Load=0
 Nb Nodes=0
-MakeDate=-542028793
+MakeDate=0
 Node End
 Do Translate=1
 PostLinker Ref=
 
 
 [Desktop Files]
-Nb Desktop Files=1
-d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.a51 (2147483647,2147483647-2147483647,2147483647) 15
-
+Nb Desktop Files=0
 
 [Closed Files]
 Nb Closed Files=0
@@ -693,7 +691,7 @@ Nb Dim Views=13
 Debug=
 
 [Project Rect]
-(2147483647,2147483647-2147483647,2147483647)
+(0,0-0,0)
 
 [LastSel]
 LastAOF=d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.aof
