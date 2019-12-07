@@ -10,7 +10,7 @@ Explore=1
 Information=0
 InfoSP=1
 ToolName=AT89C51
-ToolDll=
+ToolDll=WR40E250.DLL
 InfoExpr=
 SessionReal=0
 [51 Driver options]
@@ -75,5 +75,5 @@ ParityCOM-1=0
 [Main Registers]
 cx=290
 cy=233
-x=332
-y=75
+x=772
+y=82

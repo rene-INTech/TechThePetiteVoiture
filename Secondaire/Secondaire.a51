@@ -14,7 +14,7 @@ nb_tours			data		7Fh			;Compte le nombre de tours déjà effectués
 nb_D				data		7Eh			;Compte le nombre de touches sur la cible droite
 nb_C				data		7Dh			;Compte le nombre de touches sur la cible centrale
 nb_G				data		7Ch			;Compte le nombre de touches sur la cible gauche
-
+msg_prec			data		7Bh			;Sauvegarde le dernier message reçu
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
@@ -27,23 +27,46 @@ Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
 					
 					
 					org		0030h
-debut:
+debut:			MOV		A,#"A"
 					MOV		SP,#2Fh		;La pile se trouve dans la mémoire octets
 					MOV		TMOD,#21h	;Timer 1 en mode 2 (compteur 8 bits autorechargé pour UART) et timer 0 en mode 1 (Compteur 16 bits pour la routine d'attente)
 					MOV		TH1,#0E6h	;Communication à 1200 Bds
 					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
 					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
-
-;Attente du signal de départ
-Att_RI:			JNB		RI,Att_RI	;On attend de recevoir qqch de la balise
-					CLR		RI				;On replace le flag
-					MOV		A,SBUF
-					CJNE		A,#30h,Att_RI;Si on n'a pas reçu "0", on attend un autre message
-					SETB		Principal	;Sinon (càd on a reçu "0"), on démarre
-;Fin de l'attente du signal de départ
+					LCALL		Att_depart	;Attente du signal de départ
 					
-					;TODO : Attendre un message, s'il est différent du précédent, agir en conséquence
+;_____________________________RECEPTION UNIQUE DU MESSAGE________________________________________________________________
+;Il faudra sûrement modifier ce code pour rendre la détection plus robuste
+;Actuellemnt, il se contente d'appeler la routine associée quand on reçoit un message pour la première fois
+debut_recept:				
+					MOV		A,msg_prec	
+Att_RI:			JNB		RI,Att_RI				;Attente du flag de reception
+					CLR		RI							;On replace le flag
+					CJNE		A,SBUF,SI_pas_nv_msg	;Si le message reçu est le même que le précédent,
+					SJMP		Att_RI					;on attend un autre message,
+SI_pas_nv_msg:	MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		A,SBUF					;et on le place dans A pour tester sa valeur
+					CJNE		A,#"0",SI_non_0
+					LCALL		Balise_depart			;Si on a recu "0"
+					SJMP		fin_SI
+SI_non_0:		CJNE		A,#"4",SI_non_4
+					;Si on a recu "4"
+					SJMP		fin_SI
+SI_non_4:		CJNE		A,#"C",SI_non_C
+					;Si on a recu "C"
+					SJMP		fin_SI
+SI_non_C:		CJNE		A,#"G",SI_non_G
+					;Si on a recu "G"
+					SJMP		fin_SI
+SI_non_G:		CJNE		A,#"D",SI_non_D
+					;Si on a recu "D"
+					SJMP		fin_SI
+SI_non_D:		SJMP		fin_SI 					;Parce que je sais pas ce qu'on a recu
+
+fin_SI:			SJMP		debut_recept			;On attend le prochain message
+;_____________________________FIN RECEPTION UNIQUE DU MESSAGE______________________________________________________________
+
 					
 fin:				SJMP		fin
 
@@ -70,6 +93,18 @@ JSQ_LCD_Init:	DJNZ		R0,RPT_LCD_Init
 					MOV		LCD,#0Ch    ;Display On, Cursor Off, Blink Off
 					LCALL		LCD_CODE
 fin_LCD_Init:	RET
+
+;____________________________________________________
+;Routine d'attente du signal de départ
+Att_depart:		PUSH		Acc
+Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
+					CLR		RI							;On replace le flag
+					MOV		A,SBUF
+					CJNE		A,#30h,Att_RI_depart	;Si on n'a pas reçu "0", on attend un autre message
+					SETB		Principal				;Sinon (càd on a reçu "0"), on démarre
+					MOV		msg_prec,A				;On sauvegarde ce message
+					POP		Acc
+					RET
 
 ;___________________________________________	
 ;Routine permettant l'envoi d'une chaîne de carractères pointée par DPTR
@@ -152,7 +187,8 @@ Attente_10s:	LCALL		Attente     ;On attend 100x50 ms
 					DJNZ		Acc,Attente_10s
 SI_3_tours:		MOV		A,nb_tours	;Si on a fait 3 tours
 					CJNE		A,#3,SINON_3_tours
-					LJMP		fin			;On a terminé
+					MOV		PCON,#02h	;sudo shutdown now -m "On a terminé"
+					RET						;Cette ligne est censée ne jamais être exécutée
 SINON_3_tours:	SETB		Principal	;Sinon,on repart
                POP		Acc			;On restaure l'accumulateur
                RET
