@@ -26,7 +26,7 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
 | **GPIO**      |       |           |                                                                                       |
 | Laser         |  bit  |      P1.2 | Broche de contrôle du laser                                                           |
 | Sirene        |  bit  |      P1.3 | Broche de contrôle de la sirène                                                       |
-| LED           |  bit  |      P1.0 | Broche de contrôle de la LED de debug                                                 |
+| LED           |  bit  |      P1.0 | Broche de contrôle de la LED de debug (indique l'état de la commande vers le µC principal)|
 | Principal     |  bit  |      P3.1 | Est à l'état haut ssi la voiture doit avancer (J6.1)                                  |
 |               |  bit  |      P3.2 | Peut servir a la communication avec la carte principale (J6.2)                        |
 |               |  bit  |      P3.4 | Peut servir a la communication avec la carte principale (J6.3)                        |
