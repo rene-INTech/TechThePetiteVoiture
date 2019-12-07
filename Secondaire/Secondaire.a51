@@ -9,6 +9,7 @@ RW					bit		P0.6
 E					bit		P0.7
 Laser				bit		P1.2        ;Commande le laser
 Sirene			bit		P1.3			;Commande la sirène
+LED				bit		P1.0			;LED de debug (Sert actuellement à indiquer l'état de la commande vers la carte principale)
 Principal		bit		P3.1			;(J6.1) A l'état haut quand la voiture doit avancer
 nb_tours			data		7Fh			;Compte le nombre de tours déjà effectués
 nb_D				data		7Eh			;Compte le nombre de touches sur la cible droite
@@ -27,12 +28,15 @@ Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
 					
 					
 					org		0030h
-debut:			MOV		A,#"A"
+debut:
 					MOV		SP,#2Fh		;La pile se trouve dans la mémoire octets
 					MOV		TMOD,#21h	;Timer 1 en mode 2 (compteur 8 bits autorechargé pour UART) et timer 0 en mode 1 (Compteur 16 bits pour la routine d'attente)
 					MOV		TH1,#0E6h	;Communication à 1200 Bds
 					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
 					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
+					SETB		LED			;Allumée à l'état bas
+					CLR		Sirene
+					CLR		Laser
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
 					LCALL		Att_depart	;Attente du signal de départ
 					
@@ -102,6 +106,7 @@ Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
 					MOV		A,SBUF
 					CJNE		A,#30h,Att_RI_depart	;Si on n'a pas reçu "0", on attend un autre message
 					SETB		Principal				;Sinon (càd on a reçu "0"), on démarre
+					CLR		LED
 					MOV		msg_prec,A				;On sauvegarde ce message
 					POP		Acc
 					RET
@@ -181,15 +186,17 @@ fin_Attente:	RET
 Balise_depart:
 					PUSH		Acc			;On sauvegarde l'accumulateur
 					CLR		Principal   ;On s'arrête
+					SETB		LED
 					INC		nb_tours		;On a fait un tour de plus
-					MOV		A,#100		
-Attente_10s:	LCALL		Attente     ;On attend 100x50 ms
-					DJNZ		Acc,Attente_10s
+					MOV		A,#40		
+Attente_2s:		LCALL		Attente     ;On attend 40x50 ms
+					DJNZ		Acc,Attente_2s
 SI_3_tours:		MOV		A,nb_tours	;Si on a fait 3 tours
 					CJNE		A,#3,SINON_3_tours
 					MOV		PCON,#02h	;sudo shutdown now -m "On a terminé"
-					RET						;Cette ligne est censée ne jamais être exécutée
+					RET						;Cette instruction est censée ne jamais être exécutée
 SINON_3_tours:	SETB		Principal	;Sinon,on repart
+					CLR		LED
                POP		Acc			;On restaure l'accumulateur
                RET
 
@@ -200,6 +207,8 @@ Att_RI_Debug:	JNB		RI,Att_RI_Debug	;On attend de recevoir qqch de la balise
 					CLR		RI    
 					MOV		LCD,SBUF
 					LCALL		LCD_Data
+					LCALL		Attente
+					LCALL		Attente				;Attente 100 ms
 					RET
      
 					end
