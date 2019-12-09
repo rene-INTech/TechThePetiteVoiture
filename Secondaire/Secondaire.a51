@@ -16,6 +16,7 @@ nb_D				data		7Eh			;Compte le nombre de touches sur la cible droite
 nb_C				data		7Dh			;Compte le nombre de touches sur la cible centrale
 nb_G				data		7Ch			;Compte le nombre de touches sur la cible gauche
 msg_prec			data		7Bh			;Sauvegarde le dernier message reçu
+FLAG_4			bit		F0
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
@@ -25,6 +26,9 @@ Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
 ;Saut de la table des vecteurs d'interruprions
 					org		0000h
 					SJMP		debut
+					
+					org		000Bh
+					LJMP		IT_Timer0
 					
 					
 					org		0030h
@@ -38,37 +42,81 @@ debut:
 					CLR		Sirene
 					CLR		Laser
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
+					;LCALL		Debug_UART	
 					LCALL		Att_depart	;Attente du signal de départ
 					
 ;_____________________________RECEPTION UNIQUE DU MESSAGE________________________________________________________________
 ;Il faudra sûrement modifier ce code pour rendre la détection plus robuste
 ;Actuellemnt, il se contente d'appeler la routine associée quand on reçoit un message pour la première fois
-debut_recept:				
-					MOV		A,msg_prec	
+debut_recept:						
 Att_RI:			JNB		RI,Att_RI				;Attente du flag de reception
+					
+					JNB		FLAG_4,fin_timer
+debut_timer:	CLR		TR0                     ;On arrête le Timer
+					MOV		A,TL0					;1CM  
+					ADD		A,#Charge_L			;1CM
+		      	MOV		TL0,A					;1CM
+			      MOV		A,TH0					;1CM
+			      ADDC		A,#Charge_H			;1CM   
+			      MOV		TH0,A					;1CM  ;On précharge le timer
+		   	   CLR		TF0					;1CM  ;On prépare le flag
+			    	SETB		TR0					;1CM  ;On démare le timer
+fin_timer:					
+					
 					CLR		RI							;On replace le flag
 					CJNE		A,SBUF,SI_pas_nv_msg	;Si le message reçu est le même que le précédent,
 					SJMP		Att_RI					;on attend un autre message,
-SI_pas_nv_msg:	MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+SI_pas_nv_msg:	
 					MOV		A,SBUF					;et on le place dans A pour tester sa valeur
+					ANL		A,#7Fh					;masque bit de parité
 					CJNE		A,#"0",SI_non_0
+					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		LCD,#"0"
+					LCALL		LCD_DATA
 					LCALL		Balise_depart			;Si on a recu "0"
 					SJMP		fin_SI
 SI_non_0:		CJNE		A,#"4",SI_non_4
-					;Si on a recu "4"
+					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		LCD,#"4"
+					LCALL		LCD_DATA
+					SETB		Laser
+					SETB		Sirene
+					
+					SETB		FLAG_4
+					CLR		TR0                     ;On arrête le Timer
+					MOV		A,TL0					;1CM  
+					ADD		A,#Charge_L			;1CM
+		      	MOV		TL0,A					;1CM
+			      MOV		A,TH0					;1CM
+			      ADDC		A,#Charge_H			;1CM   
+			      MOV		TH0,A					;1CM  ;On précharge le timer
+		   	   CLR		TF0					;1CM  ;On prépare le flag
+		   	   MOV		IE,#82h				;2CM	;On autorise l'interruption Timer0
+			    	SETB		TR0					;1CM  ;On démare le timer	
+					
 					SJMP		fin_SI
 SI_non_4:		CJNE		A,#"C",SI_non_C
-					;Si on a recu "C"
+					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		LCD,#"C"
+					LCALL		LCD_DATA
 					SJMP		fin_SI
 SI_non_C:		CJNE		A,#"G",SI_non_G
 					;Si on a recu "G"
+					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		LCD,#"G"
+					LCALL		LCD_DATA
 					SJMP		fin_SI
 SI_non_G:		CJNE		A,#"D",SI_non_D
 					;Si on a recu "D"
+					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		LCD,#"D"
+					LCALL		LCD_DATA
 					SJMP		fin_SI
-SI_non_D:		SJMP		fin_SI 					;Parce que je sais pas ce qu'on a recu
+SI_non_D:		MOV		LCD,SBUF
+					LCALL		LCD_DATA
+					SJMP		fin_SI 					;Parce que je sais pas ce qu'on a recu
 
-fin_SI:			SJMP		debut_recept			;On attend le prochain message
+fin_SI:			LJMP		debut_recept			;On attend le prochain message;
 ;_____________________________FIN RECEPTION UNIQUE DU MESSAGE______________________________________________________________
 
 					
@@ -180,6 +228,16 @@ Attendre_TF0:	JNB		TF0,Attendre_TF0			;On attend le flag
 					POP		Acc
 fin_Attente:	RET
 
+
+Attente_1s:
+					PUSH		Acc
+					MOV		A,#10
+ATT_1S_loop:	LCALL		Attente
+					DJNZ		Acc,ATT_1S_loop
+					POP		Acc
+					RET
+
+
 ;___________________________________________
 ;Routine de comptage de tours, doit être appelée lorsqu'un "0" est reçu pour la première fois depuis quelques messages
 
@@ -200,15 +258,28 @@ SINON_3_tours:	SETB		Principal	;Sinon,on repart
                POP		Acc			;On restaure l'accumulateur
                RET
 
+;_____________________________________________________________________
+IT_Timer0:	
+					CLR		Sirene
+					CLR		Laser
+					CLR		FLAG_4
+					CLR		TR0
+					MOV		IE,#00h
+					RETI
 ;____________________________________________
 ;Routine permettant d'afficher le message reçu par UART sur le LCD
 Debug_UART:    
 Att_RI_Debug:	JNB		RI,Att_RI_Debug	;On attend de recevoir qqch de la balise  
-					CLR		RI    
-					MOV		LCD,SBUF
+					CLR		RI
+					MOV		LCD,#01h
+					LCALL		LCD_CODE
+					MOV		A,SBUF
+					ANL		A,#7Fh				;Masque bit de parité
+					MOV		LCD,A
 					LCALL		LCD_Data
 					LCALL		Attente
 					LCALL		Attente				;Attente 100 ms
+					SJMP		Att_RI_Debug
 					RET
      
 					end

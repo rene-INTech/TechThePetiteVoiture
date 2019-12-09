@@ -626,7 +626,7 @@ App Number=1
 Name=secondaire.aof
 Type=0
 Tool Ref=LX51
-Info Code=259
+Info Code=428
 Info XData=0
 Info Data=64
 Target Ref=80C51
@@ -647,7 +647,7 @@ Type=0
 Tool Ref=MA51
 Format Ref=
 Nb Dep=0
-Info Code=271
+Info Code=428
 Info Const=0
 Info XData=0
 Info PData=0
@@ -659,14 +659,16 @@ Do Link=1
 Do Translate=1
 Do Load=0
 Nb Nodes=0
-MakeDate=0
+MakeDate=-541604114
 Node End
 Do Translate=1
 PostLinker Ref=
 
 
 [Desktop Files]
-Nb Desktop Files=0
+Nb Desktop Files=1
+d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.a51 (41,34-995,412) 119
+
 
 [Closed Files]
 Nb Closed Files=0
@@ -679,7 +681,7 @@ Nb Dim Views=13
 3 (0,0-0,0)
 4 (0,0-0,0)
 5 (0,0-0,0)
-6 (0,0-0,0)
+6 (78,78-220,465)
 7 (0,0-0,0)
 8 (0,0-0,0)
 9 (0,0-0,0)
