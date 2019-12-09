@@ -8,7 +8,7 @@ RS    			bit		P0.5
 RW					bit		P0.6
 E					bit		P0.7
 Laser				bit		P1.2        ;Commande le laser
-Sirene			bit		P1.3			;Commande la sirène
+Sirene			bit		P1.3			;Commande la si rené
 LED				bit		P1.0			;LED de debug (Sert actuellement à indiquer l'état de la commande vers la carte principale)
 Principal		bit		P3.1			;(J6.1) A l'état haut quand la voiture doit avancer
 nb_tours			data		7Fh			;Compte le nombre de tours déjà effectués
@@ -16,7 +16,7 @@ nb_D				data		7Eh			;Compte le nombre de touches sur la cible droite
 nb_C				data		7Dh			;Compte le nombre de touches sur la cible centrale
 nb_G				data		7Ch			;Compte le nombre de touches sur la cible gauche
 msg_prec			data		7Bh			;Sauvegarde le dernier message reçu
-FLAG_4			bit		F0
+FLAG_4			bit		F0				;Vaut 1 si le tiemr d'allumage du laser doit être réinitialisé à la reception d'un message
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
@@ -28,7 +28,7 @@ Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
 					SJMP		debut
 					
 					org		000Bh
-					LJMP		IT_Timer0
+					LJMP		IT_Timer0	;Interruption du Timer 0
 					
 					
 					org		0030h
@@ -39,30 +39,22 @@ debut:
 					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
 					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
 					SETB		LED			;Allumée à l'état bas
-					CLR		Sirene
-					CLR		Laser
+					CLR		Sirene		;Allumé au RESET
+					CLR		Laser			;Allumé au RESET
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
 					;LCALL		Debug_UART	
 					LCALL		Att_depart	;Attente du signal de départ
 					
 ;_____________________________RECEPTION UNIQUE DU MESSAGE________________________________________________________________
-;Il faudra sûrement modifier ce code pour rendre la détection plus robuste
-;Actuellemnt, il se contente d'appeler la routine associée quand on reçoit un message pour la première fois
 debut_recept:						
 Att_RI:			JNB		RI,Att_RI				;Attente du flag de reception
 					
-					JNB		FLAG_4,fin_timer
-debut_timer:	CLR		TR0                     ;On arrête le Timer
-					MOV		A,TL0					;1CM  
-					ADD		A,#Charge_L			;1CM
-		      	MOV		TL0,A					;1CM
-			      MOV		A,TH0					;1CM
-			      ADDC		A,#Charge_H			;1CM   
-			      MOV		TH0,A					;1CM  ;On précharge le timer
-		   	   CLR		TF0					;1CM  ;On prépare le flag
-			    	SETB		TR0					;1CM  ;On démare le timer
+debut_timer:	JNB		FLAG_4,fin_timer		;Si on doit réinitialiser le Timer0
+					CLR		TR0                  ;On arrête le Timer
+		      	MOV		TL0,#0B3h				;1CM 
+			      MOV		TH0,#3Ch					;1CM  ;On précharge le timer
+			    	SETB		TR0						;1CM  ;On démare le timer
 fin_timer:					
-					
 					CLR		RI							;On replace le flag
 					CJNE		A,SBUF,SI_pas_nv_msg	;Si le message reçu est le même que le précédent,
 					SJMP		Att_RI					;on attend un autre message,
@@ -76,45 +68,44 @@ SI_pas_nv_msg:
 					LCALL		Balise_depart			;Si on a recu "0"
 					SJMP		fin_SI
 SI_non_0:		CJNE		A,#"4",SI_non_4
-					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					;Si on a recu "4"
+					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
 					MOV		LCD,#"4"
 					LCALL		LCD_DATA
-					SETB		Laser
+					SETB		Laser						;on active si rené et laser
 					SETB		Sirene
 					
+					;On précharge le timer 0 pour 50 ms et on active son interruption
 					SETB		FLAG_4
 					CLR		TR0                     ;On arrête le Timer
-					MOV		A,TL0					;1CM  
-					ADD		A,#Charge_L			;1CM
-		      	MOV		TL0,A					;1CM
-			      MOV		A,TH0					;1CM
-			      ADDC		A,#Charge_H			;1CM   
-			      MOV		TH0,A					;1CM  ;On précharge le timer
+		      	MOV		TL0,#0B6h			;1CM
+			      MOV		TH0,#3Ch				;1CM  ;On précharge le timer
 		   	   CLR		TF0					;1CM  ;On prépare le flag
 		   	   MOV		IE,#82h				;2CM	;On autorise l'interruption Timer0
 			    	SETB		TR0					;1CM  ;On démare le timer	
 					
 					SJMP		fin_SI
 SI_non_4:		CJNE		A,#"C",SI_non_C
-					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					;Si on a recu "C"
+					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
 					MOV		LCD,#"C"
 					LCALL		LCD_DATA
 					SJMP		fin_SI
 SI_non_C:		CJNE		A,#"G",SI_non_G
 					;Si on a recu "G"
-					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
 					MOV		LCD,#"G"
 					LCALL		LCD_DATA
 					SJMP		fin_SI
 SI_non_G:		CJNE		A,#"D",SI_non_D
 					;Si on a recu "D"
-					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
 					MOV		LCD,#"D"
 					LCALL		LCD_DATA
 					SJMP		fin_SI
-SI_non_D:		MOV		LCD,SBUF
+SI_non_D:		MOV		LCD,SBUF					;Parce que je sais pas ce qu'on a recu
 					LCALL		LCD_DATA
-					SJMP		fin_SI 					;Parce que je sais pas ce qu'on a recu
+					SJMP		fin_SI 					
 
 fin_SI:			LJMP		debut_recept			;On attend le prochain message;
 ;_____________________________FIN RECEPTION UNIQUE DU MESSAGE______________________________________________________________
@@ -228,10 +219,11 @@ Attendre_TF0:	JNB		TF0,Attendre_TF0			;On attend le flag
 					POP		Acc
 fin_Attente:	RET
 
-
+;______________________________________________________________________
+;Routine d'attente d'1s appelant la routine Attente
 Attente_1s:
 					PUSH		Acc
-					MOV		A,#10
+					MOV		A,#20
 ATT_1S_loop:	LCALL		Attente
 					DJNZ		Acc,ATT_1S_loop
 					POP		Acc
@@ -246,9 +238,7 @@ Balise_depart:
 					CLR		Principal   ;On s'arrête
 					SETB		LED
 					INC		nb_tours		;On a fait un tour de plus
-					MOV		A,#40		
-Attente_2s:		LCALL		Attente     ;On attend 40x50 ms
-					DJNZ		Acc,Attente_2s
+					LCALL		Attente_1s
 SI_3_tours:		MOV		A,nb_tours	;Si on a fait 3 tours
 					CJNE		A,#3,SINON_3_tours
 					MOV		PCON,#02h	;sudo shutdown now -m "On a terminé"
@@ -259,14 +249,17 @@ SINON_3_tours:	SETB		Principal	;Sinon,on repart
                RET
 
 ;_____________________________________________________________________
+;Routine d'interruption du Timer 0
 IT_Timer0:	
 					CLR		Sirene
 					CLR		Laser
-					CLR		FLAG_4
+					CLR		FLAG_4		;On ne veut plus relancer ce timer
 					CLR		TR0
-					MOV		IE,#00h
+					MOV		TH0,#00h
+					MOV		TL0,#00h		;On remet le timer à 0 pour la routine Attente
+					MOV		IE,#00h		;Désactivation de l'interruption
 					RETI
-;____________________________________________
+;______________________________________________________________________
 ;Routine permettant d'afficher le message reçu par UART sur le LCD
 Debug_UART:    
 Att_RI_Debug:	JNB		RI,Att_RI_Debug	;On attend de recevoir qqch de la balise  

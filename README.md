@@ -6,6 +6,7 @@ Projet du module Intégration de Système Electroniques (PHY4501)
 
 Timer 0:
 Le `Timer 0` est utilisé par la routine d'attente de 50 ms `Attente` en mode 1.
+Est également utilisé pour la désactivation du laser après un temps sans réception en mode 1 avec interruption 
 
 Timer 1:
 Le `Timer 1` est utilisé par l'UART en mode 2.
@@ -36,7 +37,8 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
 | nb_C          | octet |      0x7D | Compte le nombre de touches sur la cible centre                                       |
 | nb_D          | octet |      0x7C | Compte le nombre de touches sur la cible droite                                       |
 | msg_prec      | octet |      0x7B | Sauvegarde le dernier message reçu                                                    |
- 
+| FLAG_4 | bit | F0 | Vaut 1 si le timer 0 doit être réinitialisé à la reception d'un message |
+
 #### Routines
 - `LCD_Init`:
     Initialise l'écran LCD
@@ -64,11 +66,18 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
     Routine bloquant l'exécution pendant 50 ms
     > Utilise le `Timer 0`<br>
     > Modifie la valeur de C
+- `Attente_1s`:
+    Routine bloquant l'exécution pendant 1s
+    > Appelle la routine `Attente` 
 
 - `Balise_depart`:
     Routine à appeler à la première réception de chaque série de "0"
     > Incrémente le compteur de tours<br>
     > Eteint le microcontrôleur après 3 tours
+ 
+- `IT_Timer0`:
+    Routine d'interruption du timer 0.
+    Eteint le laser, la sirène et désactive le rechargement du timer à la réception de message et les interruptions sur ce timer
 
 - `Debug_UART`:
     Affiche le dernier message série reçu à la suite de ce qui est sur le LCD
