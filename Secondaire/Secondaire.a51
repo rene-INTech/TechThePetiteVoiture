@@ -20,7 +20,9 @@ FLAG_4			bit		F0				;Vaut 1 si le tiemr d'allumage du laser doit être réinitiali
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
-Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr	
+Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
+
+clear				equ		01h			;code d'effacement du LCD
 
 
 ;Saut de la table des vecteurs d'interruprions
@@ -32,6 +34,10 @@ Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
 					
 					
 					org		0030h
+ready_msg1:		DB			" ATTENTE SIGNAL ",0
+ready_msg2:		DB			" BALISE  DEPART ",0
+shutdown_msg1:	DB			"TRAVAIL  TERMINE",0
+shutdown_msg2:	DB			"ARRET EN COURS  ",0
 debut:
 					MOV		SP,#2Fh		;La pile se trouve dans la mémoire octets
 					MOV		TMOD,#21h	;Timer 1 en mode 2 (compteur 8 bits autorechargé pour UART) et timer 0 en mode 1 (Compteur 16 bits pour la routine d'attente)
@@ -48,24 +54,25 @@ debut:
 ;_____________________________RECEPTION UNIQUE DU MESSAGE________________________________________________________________
 debut_recept:						
 Att_RI:			JNB		RI,Att_RI				;Attente du flag de reception
+					CLR		RI							;On replace le flag
 					
 debut_timer:	JNB		FLAG_4,fin_timer		;Si on doit réinitialiser le Timer0
 					CLR		TR0                  ;On arrête le Timer
-		      	MOV		TL0,#0B3h				;1CM 
+		      	MOV		TL0,#(0B0h+3)			;1CM 
 			      MOV		TH0,#3Ch					;1CM  ;On précharge le timer
 			    	SETB		TR0						;1CM  ;On démare le timer
 fin_timer:					
-					CLR		RI							;On replace le flag
 					CJNE		A,SBUF,SI_pas_nv_msg	;Si le message reçu est le même que le précédent,
 					SJMP		Att_RI					;on attend un autre message,
 SI_pas_nv_msg:	
 					MOV		A,SBUF					;et on le place dans A pour tester sa valeur
-					ANL		A,#7Fh					;masque bit de parité
+					ANL		A,#01111111b			;masque bit de parité
 					CJNE		A,#"0",SI_non_0
-					MOV		msg_prec,SBUF			;sinon, on sauvegarde ce nouveau message,
+					;Si on a recu "0"
+					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
 					MOV		LCD,#"0"
 					LCALL		LCD_DATA
-					LCALL		Balise_depart			;Si on a recu "0"
+					LCALL		Balise_depart
 					SJMP		fin_SI
 SI_non_0:		CJNE		A,#"4",SI_non_4
 					;Si on a recu "4"
@@ -74,11 +81,15 @@ SI_non_0:		CJNE		A,#"4",SI_non_4
 					LCALL		LCD_DATA
 					SETB		Laser						;on active si rené et laser
 					SETB		Sirene
+					MOV		LCD,#0Fh
+					LCALL		LCD_CODE					;dernier carractère de la première ligne
+					MOV		LCD,#00h					;Carractère cloche
+					LCALL		LCD_DATA					
 					
 					;On précharge le timer 0 pour 50 ms et on active son interruption
 					SETB		FLAG_4
 					CLR		TR0                     ;On arrête le Timer
-		      	MOV		TL0,#0B6h			;1CM
+		      	MOV		TL0,#(0B0h+6)		;1CM
 			      MOV		TH0,#3Ch				;1CM  ;On précharge le timer
 		   	   CLR		TF0					;1CM  ;On prépare le flag
 		   	   MOV		IE,#82h				;2CM	;On autorise l'interruption Timer0
@@ -109,7 +120,6 @@ SI_non_D:		MOV		LCD,SBUF					;Parce que je sais pas ce qu'on a recu
 
 fin_SI:			LJMP		debut_recept			;On attend le prochain message;
 ;_____________________________FIN RECEPTION UNIQUE DU MESSAGE______________________________________________________________
-
 					
 fin:				SJMP		fin
 
@@ -135,18 +145,54 @@ JSQ_LCD_Init:	DJNZ		R0,RPT_LCD_Init
 					LCALL		LCD_CODE
 					MOV		LCD,#0Ch    ;Display On, Cursor Off, Blink Off
 					LCALL		LCD_CODE
+					LCALL		Load_CGRAM	;Chargement des carractères persos
 fin_LCD_Init:	RET
+
+;________________________________________________________
+;Routine de définitions des carractères persos dans la CGRAM du LCD
+Load_CGRAM:
+					MOV		LCD,#40h		;Premier carractère
+					LCALL		LCD_CODE
+					;Cloche
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Eh
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#1Fh
+					LCALL		LCD_DATA
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					
+					RET
 
 ;____________________________________________________
 ;Routine d'attente du signal de départ
 Att_depart:		PUSH		Acc
+					MOV		LCD,#80h					;On se place au premier carractère de la DDRAM
+					LCALL		LCD_CODE
+					MOV		DPTR,#ready_msg1		;Ligne 1
+					LCALL		LCD_msg
+					MOV		LCD,#0C0h            ;On se place au premier carractère de la 2e ligne
+					LCALL		LCD_Code
+					MOV		DPTR,#ready_msg2     ;Ligne 2
+					LCALL		LCD_msg
 Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
 					CLR		RI							;On replace le flag
 					MOV		A,SBUF
-					CJNE		A,#30h,Att_RI_depart	;Si on n'a pas reçu "0", on attend un autre message
+					CJNE		A,#"0",Att_RI_depart	;Si on n'a pas reçu "0", on attend un autre message
 					SETB		Principal				;Sinon (càd on a reçu "0"), on démarre
 					CLR		LED
 					MOV		msg_prec,A				;On sauvegarde ce message
+					MOV		LCD,#clear
+					LCALL		LCD_CODE
 					POP		Acc
 					RET
 
@@ -166,7 +212,7 @@ TQ_msg:		   JZ			FTQ_msg     ;Tant que cette valeur n'est pas NULL
 					SJMP		TQ_msg		;Et on réitère
 FTQ_msg:			POP		Acc			;Puis on rétablit l'accumulateur
 					RET
-											
+										
 ;___________________________________________
 ;Routine d'envoi de donnée (stockée dans le LATCH du port P2) au registre de contrôle du LCD	
 LCD_CODE:
@@ -232,20 +278,27 @@ ATT_1S_loop:	LCALL		Attente
 
 ;___________________________________________
 ;Routine de comptage de tours, doit être appelée lorsqu'un "0" est reçu pour la première fois depuis quelques messages
-
 Balise_depart:
-					PUSH		Acc			;On sauvegarde l'accumulateur
-					CLR		Principal   ;On s'arrête
+					PUSH		Acc						;On sauvegarde l'accumulateur
+					CLR		Principal   			;On s'arrête
 					SETB		LED
-					INC		nb_tours		;On a fait un tour de plus
+					INC		nb_tours					;On a fait un tour de plus
 					LCALL		Attente_1s
-SI_3_tours:		MOV		A,nb_tours	;Si on a fait 3 tours
+SI_3_tours:		MOV		A,nb_tours				;Si on a fait 3 tours
 					CJNE		A,#3,SINON_3_tours
+					MOV		LCD,#80h					;On se place au premier carractère de la DDRAM
+					LCALL		LCD_CODE
+					MOV		DPTR,#shutdown_msg1	;Ligne 1
+					LCALL		LCD_msg
+					MOV		LCD,#0C0h            ;On se place au premier carractère de la 2e ligne
+					LCALL		LCD_Code
+					MOV		DPTR,#shutdown_msg2  ;Ligne 2
+					LCALL		LCD_msg
 					MOV		PCON,#02h	;sudo shutdown now -m "On a terminé"
-					RET						;Cette instruction est censée ne jamais être exécutée
+					RET						;Cette instruction est censée ne jamais être exécutée (car après un "shutdown")
 SINON_3_tours:	SETB		Principal	;Sinon,on repart
 					CLR		LED
-               POP		Acc			;On restaure l'accumulateur
+               POP		Acc			;On restaure l'accumulateur 
                RET
 
 ;_____________________________________________________________________
@@ -254,17 +307,18 @@ IT_Timer0:
 					CLR		Sirene
 					CLR		Laser
 					CLR		FLAG_4		;On ne veut plus relancer ce timer
-					CLR		TR0
+					CLR		TR0			;On arrête le timers
 					MOV		TH0,#00h
 					MOV		TL0,#00h		;On remet le timer à 0 pour la routine Attente
 					MOV		IE,#00h		;Désactivation de l'interruption
 					RETI
+					
 ;______________________________________________________________________
 ;Routine permettant d'afficher le message reçu par UART sur le LCD
 Debug_UART:    
 Att_RI_Debug:	JNB		RI,Att_RI_Debug	;On attend de recevoir qqch de la balise  
 					CLR		RI
-					MOV		LCD,#01h
+					MOV		LCD,#clear
 					LCALL		LCD_CODE
 					MOV		A,SBUF
 					ANL		A,#7Fh				;Masque bit de parité
