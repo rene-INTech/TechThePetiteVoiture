@@ -24,10 +24,10 @@ Charge_H	    	equ 	   03Ch
 Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
 
 clear				equ		01h			;code d'effacement du LCD
-adr_D				equ		0C2h
-adr_C				equ		0C7h
-adr_G				equ		0CCh
-adr_tours		equ		8Dh
+adr_D				equ		0C2h			;adresse de DDRAM du LCD dans laquelle ecrire le nombre de touches D
+adr_C				equ		0C7h			;adresse de DDRAM du LCD dans laquelle ecrire le nombre de touches C
+adr_G				equ		0CCh			;adresse de DDRAM du LCD dans laquelle ecrire le nombre de touches G
+adr_tours		equ		8Dh			;adresse de DDRAM du LCD dans laquelle ecrire le nombre de tours
 
 
 ;Saut de la table des vecteurs d'interruprions
@@ -82,7 +82,7 @@ SI_pas_nv_msg:
 					CJNE		A,#"0",SI_non_0
 					;Si on a recu "0"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-					JB		attente_4,SI_non_0
+					JB			attente_4,SI_non_0	;si on a passé la balise cible
 					LCALL		Balise_depart
 					SETB		attente_4
 					SJMP		fin_SI
@@ -92,7 +92,7 @@ SI_non_0:		CJNE		A,#"4",SI_non_4
 					CLR		attente_4
 					SETB		Laser						;on active si rené et laser
 					SETB		Sirene
-;					MOV		LCD,#1Fh 
+;					MOV		LCD,#8Fh 
 ;					LCALL		LCD_CODE					;dernier carractère de la première ligne
 ;					MOV		LCD,#00h					;Carractère cloche
 ;					LCALL		LCD_DATA					
@@ -180,7 +180,7 @@ fin_LCD_Init:	RET
 Load_CGRAM:
 					MOV		LCD,#40h		;Premier carractère
 					LCALL		LCD_CODE
-					;Cloche
+					;Cloche pour 00h
 					MOV		LCD,#00h
 					LCALL		LCD_DATA
 					MOV		LCD,#04h
@@ -198,41 +198,116 @@ Load_CGRAM:
 					MOV		LCD,#00h
 					LCALL		LCD_DATA
 					
+					;Coeur pour 01h
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#15h
+					LCALL		LCD_DATA
+					MOV		LCD,#11h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					
+					;Sablier pour 02h
+					MOV		LCD,#1Fh
+					LCALL		LCD_DATA
+					MOV		LCD,#11h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#15h
+					LCALL		LCD_DATA
+					MOV		LCD,#1Fh
+					LCALL		LCD_DATA
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					
+					;é pour 03h
+					MOV		LCD,#02h
+					LCALL		LCD_DATA
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Eh
+					LCALL		LCD_DATA
+					MOV		LCD,#11h
+					LCALL		LCD_DATA
+					MOV		LCD,#1Fh
+					LCALL		LCD_DATA
+					MOV		LCD,#10h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Eh
+					LCALL		LCD_DATA
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					
+					;Smiley pour 04h
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ah
+					LCALL		LCD_DATA
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					MOV		LCD,#11h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Eh
+					LCALL		LCD_DATA
+					MOV		LCD,#06h
+					LCALL		LCD_DATA
+					MOV		LCD,#00h
+					LCALL		LCD_DATA
+					
+					;Simple croche pour 05h
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#06h
+					LCALL		LCD_DATA
+					MOV		LCD,#05h
+					LCALL		LCD_DATA
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#04h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Ch
+					LCALL		LCD_DATA
+					MOV		LCD,#1Ch
+					LCALL		LCD_DATA
+					MOV		LCD,#18h
+					LCALL		LCD_DATA
+					
+					;Double croche pour 06h
+					MOV		LCD,#03h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Dh
+					LCALL		LCD_DATA
+					MOV		LCD,#0Bh
+					LCALL		LCD_DATA
+					MOV		LCD,#0Dh
+					LCALL		LCD_DATA
+					MOV		LCD,#09h
+					LCALL		LCD_DATA
+					MOV		LCD,#0Bh
+					LCALL		LCD_DATA
+					MOV		LCD,#1Bh
+					LCALL		LCD_DATA
+					MOV		LCD,#18h
+					LCALL		LCD_DATA
+					
 					RET
 
-;____________________________________________________
-;Routine d'attente du signal de départ
-Att_depart:		PUSH		Acc
-					MOV		LCD,#80h					;On se place au premier carractère de la DDRAM
-					LCALL		LCD_CODE
-					MOV		DPTR,#ready_msg1		;Ligne 1
-					LCALL		LCD_msg
-					MOV		LCD,#0C0h            ;On se place au premier carractère de la 2e ligne
-					LCALL		LCD_CODE
-					MOV		DPTR,#ready_msg2     ;Ligne 2
-					LCALL		LCD_msg
-Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
-					CLR		RI							;On replace le flag
-					MOV		A,SBUF
-					CJNE		A,#"0",Att_RI_depart	;Si on n'a pas reçu "0", on attend un autre message
-					SETB		Principal				;Sinon (càd on a reçu "0"), on démarre
-					CLR		LED
-					MOV		msg_prec,A				;On sauvegarde ce message
-					MOV		LCD,#clear
-					LCALL		LCD_CODE
-					
-					;On affiche le template pour les compteurs
-					MOV		DPTR,#template_msg1
-					LCALL		LCD_msg
-					MOV		LCD,#0C0h
-					LCALL		LCD_CODE
-					MOV		DPTR,#template_msg2
-					LCALL		LCD_msg
-					
-					SETB		attente_4
-					
-					POP		Acc
-					RET
 
 ;___________________________________________	
 ;Routine permettant l'envoi d'une chaîne de carractères pointée par DPTR
@@ -312,7 +387,38 @@ ATT_1S_loop:	LCALL		Attente
 					DJNZ		Acc,ATT_1S_loop
 					POP		Acc
 					RET
-
+;____________________________________________________
+;Routine d'attente du signal de départ
+Att_depart:		PUSH		Acc
+					MOV		LCD,#80h					;On se place au premier carractère de la DDRAM
+					LCALL		LCD_CODE
+					MOV		DPTR,#ready_msg1		;Ligne 1
+					LCALL		LCD_msg
+					MOV		LCD,#0C0h            ;On se place au premier carractère de la 2e ligne
+					LCALL		LCD_CODE
+					MOV		DPTR,#ready_msg2     ;Ligne 2
+					LCALL		LCD_msg
+Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
+					CLR		RI							;On replace le flag
+					MOV		A,SBUF
+					CJNE		A,#"0",Att_RI_depart	;Si on n'a pas reçu "0", on attend un autre message
+					SETB		Principal				;Sinon (càd on a reçu "0"), on démarre
+					CLR		LED
+					MOV		msg_prec,A				;On sauvegarde ce message
+					MOV		LCD,#clear
+					LCALL		LCD_CODE
+					
+					;On affiche le template pour les compteurs
+					MOV		DPTR,#template_msg1
+					LCALL		LCD_msg
+					MOV		LCD,#0C0h
+					LCALL		LCD_CODE
+					MOV		DPTR,#template_msg2
+					LCALL		LCD_msg
+					
+					SETB		attente_4					
+					POP		Acc
+					RET
 ;___________________________________________
 ;Routine de comptage de tours, doit être appelée lorsqu'un "0" est reçu pour la première fois depuis quelques messages
 Balise_depart:
@@ -350,7 +456,7 @@ IT_Timer0:
 					CLR		Sirene
 					CLR		Laser
 					CLR		FLAG_4		;On ne veut plus relancer ce timer
-					CLR		TR0			;On arrête le timers
+					CLR		TR0			;On arrête le timer0
 					MOV		TH0,#00h
 					MOV		TL0,#00h		;On remet le timer à 0 pour la routine Attente
 					MOV		IE,#00h		;Désactivation de l'interruption
@@ -373,7 +479,9 @@ Att_RI_Debug:	JNB		RI,Att_RI_Debug	;On attend de recevoir qqch de la balise
 					SJMP		Att_RI_Debug
 					RET
 					
-;__________________________________________________________________________										
+;__________________________________________________________________________	
+;Routine affichant un "0" sur le LCD à chaque fois qu'un "0" est recu pâr UART
+;et affichant un "1" chaque fois qu'autre chose est recu									
 Debug_UART2:	
 Att_RI_Debug2:	JNB		RI,Att_RI_Debug2	;On attend de recevoir qqch de la balise  
 					CLR		RI

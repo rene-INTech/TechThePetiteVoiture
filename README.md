@@ -38,14 +38,23 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
 | nb_D          | octet |      0x7C | Compte le nombre de touches sur la cible droite                                       |
 | msg_prec      | octet |      0x7B | Sauvegarde le dernier message reçu                                                    |
 | FLAG_4 | bit | F0 | Vaut 1 si le timer 0 doit être réinitialisé à la reception d'un message |
+| attente_4 | bit | 00h | Vaut 1 si on doit ignorer les "0" parce qu'on attend de recevoir un "4" |
 
 #### Routines
 - `LCD_Init`:
     Initialise l'écran LCD
     > Utilise le registre `R0` comme variable locale
-
-- `Att_depart`:
-    Permet d'attendre la reception du signal de départ
+    
+- `Load_CGRAM`:
+    Charge les carractères personnalisés dans la CGRAM du LCD<br>
+    >0:cloche<br>
+    >1:coeur<br>
+    >2:sablier<br>
+    >3:é<br>
+    >4:smiley<br>
+    >5:simple croche<br>
+    >6:double croche<br>
+    >7:non défini<br>
 
 - `LCD_msg`:
     Permet l'envoi d'une chaîne de caractères vers le LCD
@@ -66,9 +75,13 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
     Routine bloquant l'exécution pendant 50 ms
     > Utilise le `Timer 0`<br>
     > Modifie la valeur de C
+    
 - `Attente_1s`:
     Routine bloquant l'exécution pendant 1s
     > Appelle la routine `Attente` 
+    
+- `Att_depart`:
+    Permet d'attendre la reception du signal de départ
 
 - `Balise_depart`:
     Routine à appeler à la première réception de chaque série de "0"
@@ -83,6 +96,9 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
     Affiche le dernier message série reçu à la suite de ce qui est sur le LCD
     > Suppose que les routines de communication au LCD fonctionnent
 
+- `Debug_UART2`:
+    Routine affichant un "0" sur le LCD à chaque fois qu'un "0" est recu pâr UART et affichant un "1" chaque fois qu'autre chose est recu	
+    > Suppose que les routines de communication au LCD fonctionnent
 ## Auteurs
   - [Baptou](https://github.com/bapt117)
   - [Elo](https://github.com/elomhs)
