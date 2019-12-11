@@ -23,11 +23,15 @@ Charge_H	    	equ 	   03Ch
 Charge_L	    	equ 		0B0h+08h		;Charge_L = N_L + Nr
 
 clear				equ		01h			;code d'effacement du LCD
+adr_D				equ		0C2h
+adr_C				equ		0C7h
+adr_G				equ		0CCh
+adr_tours		equ		8Dh
 
 
 ;Saut de la table des vecteurs d'interruprions
 					org		0000h
-					SJMP		debut
+					LJMP		debut
 					
 					org		000Bh
 					LJMP		IT_Timer0	;Interruption du Timer 0
@@ -38,6 +42,8 @@ ready_msg1:		DB			" ATTENTE SIGNAL ",0
 ready_msg2:		DB			" BALISE  DEPART ",0
 shutdown_msg1:	DB			"TRAVAIL  TERMINE",0
 shutdown_msg2:	DB			"ARRET EN COURS  ",0
+template_msg1:	DB			"NOMBRE TOURS:0  ",0
+template_msg2:	DB			"D:0  C:0  G:0   ",0
 debut:
 					MOV		SP,#2Fh		;La pile se trouve dans la mémoire octets
 					MOV		TMOD,#21h	;Timer 1 en mode 2 (compteur 8 bits autorechargé pour UART) et timer 0 en mode 1 (Compteur 16 bits pour la routine d'attente)
@@ -47,12 +53,17 @@ debut:
 					SETB		LED			;Allumée à l'état bas
 					CLR		Sirene		;Allumé au RESET
 					CLR		Laser			;Allumé au RESET
+					MOV		nb_tours,#"0"
+					MOV		nb_D,#"0"
+					MOV		nb_C,#"0"
+					MOV		nb_G,#"0"
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
 					;LCALL		Debug_UART	
 					LCALL		Att_depart	;Attente du signal de départ
 					
 ;_____________________________RECEPTION UNIQUE DU MESSAGE________________________________________________________________
-debut_recept:						
+debut_recept:	
+					MOV		A,msg_prec						
 Att_RI:			JNB		RI,Att_RI				;Attente du flag de reception
 					CLR		RI							;On replace le flag
 					
@@ -61,7 +72,7 @@ debut_timer:	JNB		FLAG_4,fin_timer		;Si on doit réinitialiser le Timer0
 		      	MOV		TL0,#(0B0h+3)			;1CM 
 			      MOV		TH0,#3Ch					;1CM  ;On précharge le timer
 			    	SETB		TR0						;1CM  ;On démare le timer
-fin_timer:					
+fin_timer:			
 					CJNE		A,SBUF,SI_pas_nv_msg	;Si le message reçu est le même que le précédent,
 					SJMP		Att_RI					;on attend un autre message,
 SI_pas_nv_msg:	
@@ -70,21 +81,19 @@ SI_pas_nv_msg:
 					CJNE		A,#"0",SI_non_0
 					;Si on a recu "0"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-					MOV		LCD,#"0"
-					LCALL		LCD_DATA
+
 					LCALL		Balise_depart
 					SJMP		fin_SI
 SI_non_0:		CJNE		A,#"4",SI_non_4
 					;Si on a recu "4"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-					MOV		LCD,#"4"
-					LCALL		LCD_DATA
+
 					SETB		Laser						;on active si rené et laser
 					SETB		Sirene
-					MOV		LCD,#0Fh
-					LCALL		LCD_CODE					;dernier carractère de la première ligne
-					MOV		LCD,#00h					;Carractère cloche
-					LCALL		LCD_DATA					
+;					MOV		LCD,#1Fh
+;					LCALL		LCD_CODE					;dernier carractère de la première ligne
+;					MOV		LCD,#00h					;Carractère cloche
+;					LCALL		LCD_DATA					
 					
 					;On précharge le timer 0 pour 50 ms et on active son interruption
 					SETB		FLAG_4
@@ -99,26 +108,42 @@ SI_non_0:		CJNE		A,#"4",SI_non_4
 SI_non_4:		CJNE		A,#"C",SI_non_C
 					;Si on a recu "C"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-					MOV		LCD,#"C"
+					INC		nb_C
+					
+					MOV		LCD,#adr_C
+					LCALL		LCD_CODE
+					MOV		LCD,nb_C
 					LCALL		LCD_DATA
+
 					SJMP		fin_SI
 SI_non_C:		CJNE		A,#"G",SI_non_G
 					;Si on a recu "G"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-					MOV		LCD,#"G"
+					INC		nb_G
+
+					MOV		LCD,#adr_G
+					LCALL		LCD_CODE
+					MOV		LCD,nb_G
 					LCALL		LCD_DATA
+					
 					SJMP		fin_SI
 SI_non_G:		CJNE		A,#"D",SI_non_D
 					;Si on a recu "D"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-					MOV		LCD,#"D"
+					INC		nb_D
+					
+					MOV		LCD,#adr_D
+					LCALL		LCD_CODE
+					MOV		LCD,nb_D
 					LCALL		LCD_DATA
+					
 					SJMP		fin_SI
-SI_non_D:		MOV		LCD,SBUF					;Parce que je sais pas ce qu'on a recu
-					LCALL		LCD_DATA
+SI_non_D:		;MOV		LCD,SBUF					;Parce que je sais pas ce qu'on a recu
+					;LCALL		LCD_DATA
 					SJMP		fin_SI 					
 
-fin_SI:			LJMP		debut_recept			;On attend le prochain message;
+fin_SI:					
+					LJMP		debut_recept			;On attend le prochain message;
 ;_____________________________FIN RECEPTION UNIQUE DU MESSAGE______________________________________________________________
 					
 fin:				SJMP		fin
@@ -181,7 +206,7 @@ Att_depart:		PUSH		Acc
 					MOV		DPTR,#ready_msg1		;Ligne 1
 					LCALL		LCD_msg
 					MOV		LCD,#0C0h            ;On se place au premier carractère de la 2e ligne
-					LCALL		LCD_Code
+					LCALL		LCD_CODE
 					MOV		DPTR,#ready_msg2     ;Ligne 2
 					LCALL		LCD_msg
 Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
@@ -193,6 +218,15 @@ Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
 					MOV		msg_prec,A				;On sauvegarde ce message
 					MOV		LCD,#clear
 					LCALL		LCD_CODE
+					
+					;On affiche le template pour les compteurs
+					MOV		DPTR,#template_msg1
+					LCALL		LCD_msg
+					MOV		LCD,#0C0h
+					LCALL		LCD_CODE
+					MOV		DPTR,#template_msg2
+					LCALL		LCD_msg
+					
 					POP		Acc
 					RET
 
@@ -275,7 +309,6 @@ ATT_1S_loop:	LCALL		Attente
 					POP		Acc
 					RET
 
-
 ;___________________________________________
 ;Routine de comptage de tours, doit être appelée lorsqu'un "0" est reçu pour la première fois depuis quelques messages
 Balise_depart:
@@ -283,9 +316,15 @@ Balise_depart:
 					CLR		Principal   			;On s'arrête
 					SETB		LED
 					INC		nb_tours					;On a fait un tour de plus
+					;Affichage du compteur
+					MOV		LCD,#adr_tours
+					LCALL		LCD_CODE
+					MOV		LCD,nb_tours
+					LCALL		LCD_DATA		
+					
 					LCALL		Attente_1s
 SI_3_tours:		MOV		A,nb_tours				;Si on a fait 3 tours
-					CJNE		A,#3,SINON_3_tours
+					CJNE		A,#"3",SINON_3_tours
 					MOV		LCD,#80h					;On se place au premier carractère de la DDRAM
 					LCALL		LCD_CODE
 					MOV		DPTR,#shutdown_msg1	;Ligne 1
