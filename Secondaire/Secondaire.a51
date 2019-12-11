@@ -17,6 +17,7 @@ nb_C				data		7Dh			;Compte le nombre de touches sur la cible centrale
 nb_G				data		7Ch			;Compte le nombre de touches sur la cible gauche
 msg_prec			data		7Bh			;Sauvegarde le dernier message reçu
 FLAG_4			bit		F0				;Vaut 1 si le tiemr d'allumage du laser doit être réinitialisé à la reception d'un message
+attente_4		bit		00h			;Vaut 1 si on est en première moitié de tour
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
@@ -81,16 +82,17 @@ SI_pas_nv_msg:
 					CJNE		A,#"0",SI_non_0
 					;Si on a recu "0"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-
+					JB		attente_4,SI_non_0
 					LCALL		Balise_depart
+					SETB		attente_4
 					SJMP		fin_SI
 SI_non_0:		CJNE		A,#"4",SI_non_4
 					;Si on a recu "4"
 					MOV		msg_prec,SBUF			;on sauvegarde ce nouveau message,
-
+					CLR		attente_4
 					SETB		Laser						;on active si rené et laser
 					SETB		Sirene
-;					MOV		LCD,#1Fh
+;					MOV		LCD,#1Fh 
 ;					LCALL		LCD_CODE					;dernier carractère de la première ligne
 ;					MOV		LCD,#00h					;Carractère cloche
 ;					LCALL		LCD_DATA					
@@ -227,6 +229,8 @@ Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
 					MOV		DPTR,#template_msg2
 					LCALL		LCD_msg
 					
+					SETB		attente_4
+					
 					POP		Acc
 					RET
 
@@ -350,6 +354,7 @@ IT_Timer0:
 					MOV		TH0,#00h
 					MOV		TL0,#00h		;On remet le timer à 0 pour la routine Attente
 					MOV		IE,#00h		;Désactivation de l'interruption
+					MOV		msg_prec,#"1";Si le prochain message reçu est "4", on rallume le laser
 					RETI
 					
 ;______________________________________________________________________
@@ -366,6 +371,22 @@ Att_RI_Debug:	JNB		RI,Att_RI_Debug	;On attend de recevoir qqch de la balise
 					LCALL		Attente
 					LCALL		Attente				;Attente 100 ms
 					SJMP		Att_RI_Debug
+					RET
+					
+;__________________________________________________________________________										
+Debug_UART2:	
+Att_RI_Debug2:	JNB		RI,Att_RI_Debug2	;On attend de recevoir qqch de la balise  
+					CLR		RI
+					MOV		A,SBUF
+					ANL		A,#7Fh				;Masque bit de parité
+					CJNE		A,#"0",PAS_ZERO
+					MOV		LCD,#"0"
+					LCALL		LCD_DATA
+					SJMP		FIN_debug2
+PAS_ZERO:		MOV		LCD,#"1"
+					LCALL		LCD_Data
+FIN_debug2:				
+					SJMP		Att_RI_Debug2
 					RET
      
 					end

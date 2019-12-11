@@ -24,9 +24,9 @@ Link_BreakSeq=Ext UART
 [Breakpoint]
 number=1
 type0=0
-line0=66
+line0=88
 file0=d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.a51
-address0=189
+address0=232
 length0=1
 space0=0
 iscdt0=0
@@ -144,7 +144,7 @@ fEnable-1=0
 ParityCOM-1=0
 AsciiHex-1=0
 SpyTrm-1=1
-SpyRec-1=0
+SpyRec-1=1
 [Main Registers]
 cx=290
 cy=233
@@ -158,10 +158,10 @@ y=184
 [DATA]
 cx=361
 cy=346
-x=720
-y=91
+x=420
+y=6
 NbVal=8
-select=127
+select=123
 top=0
 [XDATA]
 cx=142
@@ -174,8 +174,8 @@ top=0
 [UART]
 cx=777
 cy=378
-x=650
-y=168
+x=434
+y=57
 [Port 2]
 cx=163
 cy=196
@@ -189,3 +189,11 @@ y=250
 NbVal=8
 select=152
 top=152
+[BIT]
+cx=436
+cy=387
+x=71
+y=176
+NbVal=8
+select=0
+top=0
