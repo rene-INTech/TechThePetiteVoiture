@@ -17,7 +17,7 @@ nb_C				data		7Dh			;Compte le nombre de touches sur la cible centrale
 nb_G				data		7Ch			;Compte le nombre de touches sur la cible gauche
 msg_prec			data		7Bh			;Sauvegarde le dernier message reçu
 FLAG_4			bit		F0				;Vaut 1 si le tiemr d'allumage du laser doit être réinitialisé à la reception d'un message
-attente_4		bit		00h			;Vaut 1 si on est en première moitié de tour
+attente_4		bit		00h			;Vaut 1 si on est en première moitié de tour (donc on n'accepte pas de recevoir "0" avant d'avoir recu "4")
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 	   03Ch
@@ -45,6 +45,7 @@ shutdown_msg1:	DB			"TRAVAIL  TERMINE",0
 shutdown_msg2:	DB			"ARRET EN COURS  ",0
 template_msg1:	DB			"NOMBRE TOURS:0  ",0
 template_msg2:	DB			"D:0  C:0  G:0   ",0
+
 debut:
 					MOV		SP,#2Fh		;La pile se trouve dans la mémoire octets
 					MOV		TMOD,#21h	;Timer 1 en mode 2 (compteur 8 bits autorechargé pour UART) et timer 0 en mode 1 (Compteur 16 bits pour la routine d'attente)
@@ -92,10 +93,10 @@ SI_non_0:		CJNE		A,#"4",SI_non_4
 					CLR		attente_4
 					SETB		Laser						;on active si rené et laser
 					SETB		Sirene
-;					MOV		LCD,#8Fh 
-;					LCALL		LCD_CODE					;dernier carractère de la première ligne
-;					MOV		LCD,#00h					;Carractère cloche
-;					LCALL		LCD_DATA					
+					MOV		LCD,#8Fh 
+					LCALL		LCD_CODE					;dernier carractère de la première ligne
+					MOV		LCD,#00h					;Carractère cloche
+					LCALL		LCD_DATA					
 					
 					;On précharge le timer 0 pour 50 ms et on active son interruption
 					SETB		FLAG_4
@@ -404,7 +405,7 @@ Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
 					CJNE		A,#"0",Att_RI_depart	;Si on n'a pas reçu "0", on attend un autre message
 					SETB		Principal				;Sinon (càd on a reçu "0"), on démarre
 					CLR		LED
-					MOV		msg_prec,A				;On sauvegarde ce message
+					MOV		msg_prec,A				;On sauvegarde ce message 
 					MOV		LCD,#clear
 					LCALL		LCD_CODE
 					
@@ -430,7 +431,12 @@ Balise_depart:
 					MOV		LCD,#adr_tours
 					LCALL		LCD_CODE
 					MOV		LCD,nb_tours
-					LCALL		LCD_DATA		
+					LCALL		LCD_DATA	
+						
+					MOV		LCD,#8Fh 
+					LCALL		LCD_CODE					;dernier carractère de la première ligne
+					MOV		LCD,#02h					;carractère sablier
+					LCALL		LCD_DATA
 					
 					LCALL		Attente_1s
 SI_3_tours:		MOV		A,nb_tours				;Si on a fait 3 tours
@@ -447,6 +453,10 @@ SI_3_tours:		MOV		A,nb_tours				;Si on a fait 3 tours
 					RET						;Cette instruction est censée ne jamais être exécutée (car après un "shutdown")
 SINON_3_tours:	SETB		Principal	;Sinon,on repart
 					CLR		LED
+					MOV		LCD,#8Fh 
+					LCALL		LCD_CODE		;dernier carractère de la première ligne
+					MOV		LCD,#" "
+					LCALL		LCD_DATA
                POP		Acc			;On restaure l'accumulateur 
                RET
 
@@ -455,12 +465,16 @@ SINON_3_tours:	SETB		Principal	;Sinon,on repart
 IT_Timer0:	
 					CLR		Sirene
 					CLR		Laser
-					CLR		FLAG_4		;On ne veut plus relancer ce timer
-					CLR		TR0			;On arrête le timer0
+					CLR		FLAG_4				;On ne veut plus relancer ce timer
+					CLR		TR0					;On arrête le timer0
 					MOV		TH0,#00h
-					MOV		TL0,#00h		;On remet le timer à 0 pour la routine Attente
-					MOV		IE,#00h		;Désactivation de l'interruption
-					MOV		msg_prec,#"1";Si le prochain message reçu est "4", on rallume le laser
+					MOV		TL0,#00h				;On remet le timer à 0 pour la routine Attente
+					MOV		IE,#00h				;Désactivation de l'interruption
+					MOV		LCD,#8Fh 
+					LCALL		LCD_CODE				;dernier carractère de la première ligne
+					MOV		LCD,#" "
+					LCALL		LCD_DATA				;On efface la cloche
+					MOV		msg_prec,#"1" 		;Si le prochain message reçu est "4", on rallume le laser
 					RETI
 					
 ;______________________________________________________________________

@@ -1,0 +1,185 @@
+
+Secondaire:
+debut:
+	(SP)<-2Fh
+	(TMOD)<-21h
+	(TH1)<-E6h
+	(SCON)<-50h
+	(TCON)<-40h
+	(Sirene)<-0
+	(Laser)<-0
+	(nb_tours)<-"0"
+	(nb_D)<-"0"
+	(nb_C)<-"0"
+	(nb_G)<-"0"
+	LCD_Init()
+	Att_depart()
+
+	Répéter:
+		Répéter:
+			Répéter:
+			Jusqu'à (RI) = 1
+			(RI)<-0
+			Si (FLAG_4) = 1:
+				(TR0)<-0
+				(T0)<-3CB0h
+				(TR0)<-1
+			Fin Si
+		Jusqu'à (SBUF) != (msg_prec)
+		
+		(msg_prec)<-(SBUF) & 7Fh
+		
+		Selon (msg_prec):
+			"0":
+				Si (attente_4) = 0
+					Balise_depart()
+				Fin Si
+				
+			"4":
+				(attente_4)<-0
+				(Laser)<-1
+				(Sirene)<-1
+				(FLAG_4)<-1
+				LCD_CODE(8Fh)
+				LCD_DATA(00h)
+				
+				(TR0)<-0
+				(T0)<-3CB0h
+				(TF0)<-0
+				(IE)<-82h
+				(TR0)<-1
+			
+			"C":
+				(nb_C)<-(nb_C)+1
+				LCD_CODE(adr_C)
+				LCD_DATA((nb_C))
+			
+			"D":
+				(nb_D)<-(nb_D)+1
+				LCD_CODE(adr_D)
+				LCD_DATA((nb_C))
+			"G":
+				(nb_G)<-(nb_G)+1
+				LCD_CODE(adr_G)
+				LCD_DATA(adr_G)
+		Fin_Selon
+	Jusqu'à l'infini
+	
+Fontion LCD_Init():
+	Pour (compteur_local) allant de 3 à 0 par pas de -1:
+		Attente()
+		(RS)<-0
+		(RW)<-0
+		(LCD)<-30
+		(E)<-1
+		(E)<-0
+	Fin Pour
+	LCD_CODE(38h)
+	LCD_CODE(08h)
+	LCD_CODE(01h)
+	LCD_CODE(06h)
+	LCD_CODE(0Ch)
+	Load_CGRAM()
+Fin LCD_Init
+
+Fontion LCD_CODE(code):
+	LCD_BF()
+	(LCD)<-code
+	(RS)<-0
+	(RW)<-0
+	(E)<-1
+	(E)<-0
+Fin LCD_CODE
+
+Fontion LCD_DATA(data):
+	LCD_BF()
+	(LCD)<-data
+	(RS)<-1
+	(RW)<-0
+	(E)<-1
+	(E)<-0
+Fin LCD_DATA
+
+Fontion LCD_BF():
+	(LCD)<-FFh
+	(RS)<-0
+	(RW)<-1
+	Répéter:
+		(E)<-0
+		(E)<-1
+	Jusqu'à (BF) = 0
+	(E)<-0
+Fin LCD_BF
+
+Fontion Attente():
+	(TR0)<-0
+	(T0)<-(T0)+Charge
+	(TF0)<-0
+	(TR0)<-1
+	Répéter:
+	Jusqu'à (TF0) = 1
+Fin Attente
+
+Fontion Attente_1S():
+	Pour (compteur_local) allant de 20 à 0 par pas de -1:
+		Attente()
+	Fin Pour
+Fin Attente_1S
+
+Fontion Att_depart():
+	LCD_CODE(80h)
+	LCD_msg(ready_msg1)
+	LCD_CODE(C0h)
+	LCD_msg(ready_msg)
+	
+	Répéter:
+		Répéter:
+		Jusqu'à (RI) = 1
+		(RI)<-0
+	Jusqu'à [ (SBUF)&7Fh ] = "0"
+	
+	(Principal)<-1
+	(msg_prec)<-(SBUF)
+	LCD_CODE(clear)
+	LCD_msg(template_msg1)
+	LCD_CODE(C0h)
+	LCD_msg(template_msg2)
+	(attente_4)<-1
+Fin Att_depart
+	
+Fontion Balise_depart():
+	(Principal)<-0
+	(nb_tours)<-(nb_tours)+1
+	
+	LCD_CODE(adr_tours)
+	LCD_DATA((nb_tours))
+	LCD_CODE(8Fh)
+	LCD_DATA(02h)
+	Attente_1S()
+	
+	Si	(nb_tours) = "3":
+		LCD_CODE(80h)
+		LCD_msg(shutdown_msg1)
+		LCD_CODE(C0h)
+		LCD_msg(shutdown_msg2)
+		(PCON)<-02h
+	Fin Si
+	
+	(Principal)<-1
+	LCD_CODE(8Fh)
+	LCD_DATA(" ")
+Fin Balise_depart
+
+Fontion IT_Timer0():
+	(Sirene)<-0
+	(Laser)<-0
+	(FLAG_4)<-0
+	(TR0)<-0
+	(T0)<-0000h
+	(IE)<-00h
+	LCD_CODE(8Fh)
+	LCD_DATA(" ")
+	(msg_prec)<-"1"
+Fin IT_Timer0
+	
+	
