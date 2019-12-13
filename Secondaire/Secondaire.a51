@@ -27,7 +27,6 @@ Charge_L			equ 		0B0h+08h		;Charge_L = N_L + Nr
 
 ;Codes utiles pour le contrôle du LCD
 clear				equ		01h			;code d'effacement du LCD
-shift_left		equ		14h			;code de décalage de l'affichage vers la gauche
 adr_D				equ		42h or 80h	;code d'accès à l'adresse de DDRAM du LCD dans laquelle ecrire le nombre de touches D
 adr_C				equ		47h or 80h	;code d'accès à l'adresse de DDRAM du LCD dans laquelle ecrire le nombre de touches C
 adr_G				equ		4Ch or 80h	;code d'accès à l'adresse de DDRAM du LCD dans laquelle ecrire le nombre de touches G
@@ -53,7 +52,7 @@ shutdown_msg1:DB		"TRAVAIL  TERMINE",0
 shutdown_msg2:DB		"ARRET EN COURS ",4,0
 template1:		DB			"NOMBRE TOURS:0  ",0
 template2:		DB			"D:0  C:0  G:0   ",0
-auteurs_msg1:	DB			0E4h,"C principal par Eloise ",26h," Gwendoline",1,1,1,0
+auteurs_msg1:	DB			0E4h,"C principal par Eloise ",26h," Gwendoline ",1,1,1,0
 auteurs_msg2:	DB			0E4h,"C secondaire par R",3,"mi ",26h," Baptiste ",1,1,1,1,1,1,0
 
 ;Programme principal du µC secondaire
@@ -71,7 +70,8 @@ debut:
 					MOV		nb_C,#"0"
 					MOV		nb_G,#"0"
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
-					;LCALL		Debug_UART	
+					;LCALL		Debug_UART
+					LCALL		Signature	
 					LCALL		Att_depart	;Attente du signal de départ
 					
 ;_____________________________RECEPTION UNIQUE DU MESSAGE________________________________________________________________
@@ -373,6 +373,30 @@ JSQ_BF:			JB			BF,RPT_BF   	;Jusqu'à ce que le Busy Flag soit bas
 					POP		LCD			;On replace la valeur à écrire
 fin_LCD_BF:		RET
 
+;______________________________________________________________________
+;Routine affichant nos noms sur l'écran (en faisant défiler)
+Signature:		
+					MOV		LCD,#adr_ligne1
+					LCALL		LCD_Code
+					MOV		DPTR,#auteurs_msg1
+					LCALL		LCD_msg
+					MOV		LCD,#adr_ligne2
+					LCALL		LCD_Code
+					MOV		DPTR,#auteurs_msg2
+					LCALL		LCD_msg
+					
+					LCALL		Attente_1s
+					MOV		R0,#24			;nombre de décalages
+RPT_decalage:	MOV		R1,#10
+RPT_att_dec:	LCALL		Attente
+					DJNZ		R1,RPT_att_dec
+					MOV		LCD,#18h
+					LCALL		LCD_Code
+					DJNZ		R0,RPT_decalage
+					MOV		LCD,#clear
+					LCALL		LCD_code
+					RET
+
 ;___________________________________________	
 ;Routine d'attente de 50ms
 ;Utilise le Timer0 en mode 1 (compteur 16 bits)
@@ -461,11 +485,11 @@ SI_3_tours:		MOV		A,nb_tours				;Si on a fait 3 tours
 					LCALL		LCD_Code
 					MOV		DPTR,#shutdown_msg2  ;Ligne 2
 					LCALL		LCD_msg
-					MOV		PCON,#02h	;sudo shutdown now -m "On a terminé"
-					RET						;Cette instruction est censée ne jamais être exécutée (car après un "shutdown")
-SINON_3_tours:	SETB		Principal	;Sinon,on repart
+					MOV		PCON,#02h		;sudo shutdown now -m "On a terminé"
+					RET							;Cette instruction est censée ne jamais être exécutée (car après un "shutdown")
+SINON_3_tours:	SETB		Principal			;Sinon,on repart
 					CLR		LED
-					SETB		attente_4	;On n'exécutera pas cette routine avant d'avoir recu un "4"
+					SETB		attente_4		;On n'exécutera pas cette routine avant d'avoir recu un "4"
 					CLR		FLAG_D
 					CLR		FLAG_C
 					CLR		FLAG_G		
@@ -473,8 +497,8 @@ SINON_3_tours:	SETB		Principal	;Sinon,on repart
 					MOV		LCD,#adr_fin_l1
 					LCALL		LCD_CODE		;dernier carractère de la première ligne
 					MOV		LCD,#" "
-					LCALL		LCD_DATA    ;On efface le sablier
-               			POP		Acc			;On restaure l'accumulateur 
+					LCALL		LCD_DATA		;On efface le sablier
+               			POP		Acc				;On restaure l'accumulateur 
                			RET
 ;_____________________________________________________________________
 ;Routine d'interruption du Timer 0

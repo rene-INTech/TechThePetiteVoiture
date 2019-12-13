@@ -36,6 +36,8 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
 | nb_G          | octet |      0x7E | Compte le nombre de touches sur la cible gauche                                       |
 | nb_C          | octet |      0x7D | Compte le nombre de touches sur la cible centre                                       |
 | nb_D          | octet |      0x7C | Compte le nombre de touches sur la cible droite                                       |
+| **Flags** | | | |
+
 | msg_prec      | octet |      0x7B | Sauvegarde le dernier message reçu                                                    |
 | FLAG_4 | bit | F0 | Vaut 1 si le timer 0 doit être réinitialisé à la reception d'un message |
 | attente_4 | bit | 00h | Vaut 1 si on doit ignorer les "0" parce qu'on attend de recevoir un "4" |
