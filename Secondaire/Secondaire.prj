@@ -29,12 +29,12 @@ Promptbeforedelete=0
 Oemtoascii=0
 Decalage=2
 Undonumber=10
-TabStop=3
+TabStop=6
 End Group Edit
 Begin Group Font
 Height=12
-Name=courier new
-Default=1
+Name=Ubuntu
+Default=0
 End Group Font
 Begin Group Colors
 Data=14745599
@@ -42,12 +42,12 @@ Code=15658705
 ColorBackground=1
 Error=255
 String=16711680
-Operator=8421504
+Operator=8388736
 Key=0
 Comment=8421376
 Control=32768
 Numeric=16711680
-Identifier=8388608
+Identifier=128
 Highlight=1
 End Group Colors
 End Options Environment
@@ -626,7 +626,7 @@ App Number=1
 Name=secondaire.aof
 Type=0
 Tool Ref=LX51
-Info Code=1057
+Info Code=1067
 Info XData=0
 Info Data=64
 Target Ref=80C51
@@ -647,7 +647,7 @@ Type=0
 Tool Ref=MA51
 Format Ref=
 Nb Dep=0
-Info Code=1057
+Info Code=1067
 Info Const=0
 Info XData=0
 Info PData=0
@@ -659,16 +659,14 @@ Do Link=1
 Do Translate=1
 Do Load=0
 Nb Nodes=0
-MakeDate=-541439170
+MakeDate=-541319173
 Node End
 Do Translate=1
 PostLinker Ref=
 
 
 [Desktop Files]
-Nb Desktop Files=1
-d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.a51 (2147483647,2147483647-2147483647,2147483647) 410
-
+Nb Desktop Files=0
 
 [Closed Files]
 Nb Closed Files=0
@@ -693,7 +691,7 @@ Nb Dim Views=13
 Debug=
 
 [Project Rect]
-(2147483647,2147483647-2147483647,2147483647)
+(0,0-0,0)
 
 [LastSel]
 LastAOF=d:\tsp\ise_phy4501\techthepetitevoiture\secondaire\secondaire.aof

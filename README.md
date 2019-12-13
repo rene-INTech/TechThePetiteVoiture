@@ -39,6 +39,10 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
 | msg_prec      | octet |      0x7B | Sauvegarde le dernier message reçu                                                    |
 | FLAG_4 | bit | F0 | Vaut 1 si le timer 0 doit être réinitialisé à la reception d'un message |
 | attente_4 | bit | 00h | Vaut 1 si on doit ignorer les "0" parce qu'on attend de recevoir un "4" |
+| FLAG_D | bit | 01h | Vaut 1 si on a déjà incrémenté le compteur D pour ce tour |
+| FLAG_C | bit | 02h | Vaut 1 si on a déjà incrémenté le compteur C pour ce tour |
+| FLAG_G | bit | 03h | Vaut 1 si on a déjà incrémenté le compteur G pour ce tour |
+
 
 #### Routines
 - `LCD_Init`:

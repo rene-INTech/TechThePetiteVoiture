@@ -27,9 +27,9 @@ debut:
 			Fin Si
 		Jusqu'à (SBUF) != (msg_prec)
 		
-		(msg_prec)<-(SBUF) & 7Fh
+		(msg_actuel)<-(SBUF) & 7Fh
 		
-		Selon (msg_prec):
+		Selon (msg_actuel):
 			"0":
 				Si (attente_4) = 0
 					Balise_depart()
@@ -50,19 +50,39 @@ debut:
 				(TR0)<-1
 			
 			"C":
-				(nb_C)<-(nb_C)+1
-				LCD_CODE(adr_C)
-				LCD_DATA((nb_C))
-			
+				Si (FLAG_4)=1 et (FLAG_C)=0:
+					(nb_C)<-(nb_C)+1
+					LCD_CODE(adr_C)
+					LCD_DATA((nb_C))
+					(FLAG_C)<-1
+				Sinon:
+					(msg_actuel)<-(msg_prec)
+				Fin Si
+				
 			"D":
-				(nb_D)<-(nb_D)+1
-				LCD_CODE(adr_D)
-				LCD_DATA((nb_C))
+				Si (FLAG_4)=1 et (FLAG_D)=0:
+					(nb_D)<-(nb_D)+1
+					LCD_CODE(adr_D)
+					LCD_DATA((nb_C))
+					(FLAG_D)<-1
+				Sinon:
+					(msg_actuel)<-(msg_prec)
+				Fin Si
+				
 			"G":
-				(nb_G)<-(nb_G)+1
-				LCD_CODE(adr_G)
-				LCD_DATA(adr_G)
+				Si (FLAG_4)=1 et (FLAG_G)=0:
+					(nb_G)<-(nb_G)+1
+					LCD_CODE(adr_G)
+					LCD_DATA(adr_G)
+					(FLAG_G)<-1
+				Sinon:
+					(msg_actuel)<-(msg_prec)
+				Fin Si
+				
+			Autrement:
+				(msg_actuel)<-(msg_prec)
 		Fin_Selon
+		(msg_prec)<-(msg_actuel)
 	Jusqu'à l'infini
 	
 Fontion LCD_Init():
@@ -157,7 +177,7 @@ Fontion Balise_depart():
 	LCD_DATA(02h)
 	Attente_1S()
 	
-	Si	(nb_tours) = "3":
+	Si (nb_tours) = "3":
 		LCD_CODE(80h)
 		LCD_msg(shutdown_msg1)
 		LCD_CODE(C0h)
@@ -166,6 +186,10 @@ Fontion Balise_depart():
 	Fin Si
 	
 	(Principal)<-1
+	(attente_4)<-1
+	(FLAG_C)<-0
+	(FLAG_D)<-0
+	(FLAG_G)<-0
 	LCD_CODE(8Fh)
 	LCD_DATA(" ")
 Fin Balise_depart
