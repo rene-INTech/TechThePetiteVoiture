@@ -13,6 +13,7 @@ debut:
 	(nb_C)<-"0"
 	(nb_G)<-"0"
 	LCD_Init()
+	Signature()
 	Att_depart()
 
 	Répéter:
@@ -36,18 +37,19 @@ debut:
 				Fin Si
 				
 			"4":
-				(attente_4)<-0
-				(Laser)<-1
-				(Sirene)<-1
-				(FLAG_4)<-1
-				LCD_CODE(8Fh)
-				LCD_DATA(00h)
-				
-				(TR0)<-0
-				(T0)<-3CB0h
-				(TF0)<-0
-				(IE)<-82h
-				(TR0)<-1
+				Si (allow_4) = 1:
+					(attente_4)<-0
+					(Laser)<-1
+					(Sirene)<-1
+					(FLAG_4)<-1
+					LCD_CODE(8Fh)
+					LCD_DATA(00h)
+					
+					(TR0)<-0
+					(T0)<-3CB0h
+					(TF0)<-0
+					(IE)<-82h
+					(TR0)<-1
 			
 			"C":
 				Si (FLAG_4)=1 et (FLAG_C)=0:
@@ -165,6 +167,7 @@ Fontion Att_depart():
 	LCD_CODE(C0h)
 	LCD_msg(template_msg2)
 	(attente_4)<-1
+	Init_delai_4()	
 Fin Att_depart
 	
 Fontion Balise_depart():
@@ -191,19 +194,41 @@ Fontion Balise_depart():
 	(FLAG_D)<-0
 	(FLAG_G)<-0
 	LCD_CODE(8Fh)
-	LCD_DATA(" ")
+	LCD_DATA(" 
+	Init_delai_4()
 Fin Balise_depart
 
-Fontion IT_Timer0():
-	(Sirene)<-0
-	(Laser)<-0
-	(FLAG_4)<-0
+Fontion Init_delai_4():
 	(TR0)<-0
-	(T0)<-0000h
-	(IE)<-00h
-	LCD_CODE(8Fh)
-	LCD_DATA(" ")
-	(msg_prec)<-"1"
+	(T0)<-0
+	(TF0)<-0
+	(IE)<-82h
+	(CPT_INT)<-charge_CPT_INT
+	(allow_4)<-0
+	(TR0)<-1
+Fin Init_delai_4
+
+Fontion IT_Timer0():
+	Si (allow_4) = 1:
+		(Sirene)<-0
+		(Laser)<-0
+		(FLAG_4)<-0
+		(TR0)<-0
+		(T0)<-0000h
+		(IE)<-00h
+		LCD_CODE(8Fh)
+		LCD_DATA(" ")
+		(msg_prec)<-"1"
+	Sinon:
+		(CPT_INT)<-(CPT_INT)-1
+		Si (CPT_INT) = 0:
+			(allow_4)<-1
+			(TR0)<-0
+			(T0)<-0000h
+			(IE)<-00h
+		Fin Si
+	Fin Si
+	
 Fin IT_Timer0
 	
 	

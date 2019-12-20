@@ -20,10 +20,14 @@ attente_4		bit			00h			;Vaut 1 si on est en première moitié de tour (donc on n'a
 FLAG_D			bit			01h			;Vaut 1 si on a déjà incrémenté le compteur D pour ce tour
 FLAG_C			bit			02h			;Vaut 1 si on a déjà incrémenté le compteur C pour ce tour
 FLAG_G			bit			03h			;Vaut 1 si on a déjà incrémenté le compteur G pour ce tour
+allow_4			bit			04h			;Vaut 1 si on autorise la réception de "4"
+CPT_INT			data		7Ah			;Compte les interruptions pour  attendre d'être èloigné de la balise de départ
 
 ;Ressources de la routine Attente
 Charge_H	    	equ 		03Ch
-Charge_L			equ 		0B0h+08h		;Charge_L = N_L + Nr
+Charge_L			equ 		0B0h+08h	;Charge_L = N_L + Nr
+
+Charge_CPT_INT	equ	100
 
 ;Codes utiles pour le contrôle du LCD
 clear				equ		01h			;code d'effacement du LCD
@@ -63,15 +67,16 @@ debut:
 					MOV		SCON,#50h	;Communication UART mode 1, réception autorisée, pas de 9e bit
 					MOV		TCON,#40h	;Démarrage du Timer 1, pas d'interruptions externes
 					SETB		LED			;Allumée à l'état bas
-					CLR		Sirene		;Allumé au RESET
+					CLR		Sirene			;Allumé au RESET
 					CLR		Laser			;Allumé au RESET
+					CLR		Principal		;On n'avance pas au début
 					MOV		nb_tours,#"0"
 					MOV		nb_D,#"0"
 					MOV		nb_C,#"0"
 					MOV		nb_G,#"0"
 					LCALL		LCD_Init		;Initialisation de l'afficheur LCD
 					;LCALL		Debug_UART
-					LCALL		Signature	
+					;LCALL		Signature	
 					LCALL		Att_depart	;Attente du signal de départ
 					
 ;_____________________________RECEPTION UNIQUE DU MESSAGE________________________________________________________________
@@ -94,12 +99,14 @@ SI_pas_nv_msg:
 					
 SI_0:				CJNE		A,#"0",SI_4
 					;Si on a recu "0"
-					JB			attente_4,defaut		;si on a passé la balise cible
+					JB			attente_4,to_defaut		;si on a passé la balise cible
 					LCALL		Balise_depart
-					SJMP		fin_SI
-					
+					LJMP		fin_SI
+to_defaut:		LJMP		defaut					
 SI_4	:			CJNE		A,#"4",SI_C
 					;Si on a recu "4"
+					JNB		allow_4,SI_C
+					
 					CLR		attente_4
 					SETB		Laser						;on active si rené et laser
 					SETB		Sirene
@@ -118,7 +125,7 @@ SI_4	:			CJNE		A,#"4",SI_C
 					SETB		TR0					;1CM  ;On démare le timer	
 					
 					SJMP		fin_SI
-					
+										
 SI_C:				CJNE		A,#"C",SI_G
 					;Si on a recu "C"
 					JNB		FLAG_4,defaut		;Si le laser n'est pas allumé, on ne doit pas recevoir de "C"
@@ -143,7 +150,7 @@ SI_G:			CJNE		A,#"G",SI_D
 					LCALL		LCD_DATA					
 					SJMP		fin_SI
 					
-SI_D:			CJNE		A,#"D",defaut
+SI_D:				CJNE		A,#"D",defaut
 					;Si on a recu "D"
 					JNB		FLAG_4,defaut
 					JB			FLAG_D,defaut
@@ -453,6 +460,7 @@ Att_RI_depart:	JNB		RI,Att_RI_depart		;On attend de recevoir qqch de la balise
 					LCALL		LCD_msg
 					
 					SETB		attente_4
+					LCALL		Init_delai_4
 									
 					POP		Acc
 					RET
@@ -498,11 +506,27 @@ SINON_3_tours:	SETB		Principal			;Sinon,on repart
 					LCALL		LCD_CODE		;dernier carractère de la première ligne
 					MOV		LCD,#" "
 					LCALL		LCD_DATA		;On efface le sablier
+					
+					LCALL		Init_delai_4				
                			POP		Acc				;On restaure l'accumulateur 
                			RET
+;____________________________________________________________________
+
+Init_delai_4:
+					CLR		TR0					;On arrête le Timer
+		      		MOV		TL0,#0				;1CM
+					MOV		TH0,#0				;1CM  ;On précharge le timer
+					CLR		TF0					;1CM  ;On prépare le flag
+					MOV		IE,#82h				;2CM	;On autorise l'interruption Timer0
+					SETB		TR0					;1CM  ;On démare le timer
+					MOV		CPT_INT,Charge_CPT_INT
+					CLR		allow_4	
+					RET
+
 ;_____________________________________________________________________
 ;Routine d'interruption du Timer 0
 IT_Timer0:	
+					JNB		allow_4,int_delai_balise
 					CLR		Sirene
 					CLR		Laser
 					CLR		FLAG_4				;On ne veut plus relancer ce timer
@@ -515,7 +539,16 @@ IT_Timer0:
 					MOV		LCD,#" "
 					LCALL		LCD_DATA				;On efface la cloche
 					MOV		msg_prec,#"1" 		;Si le prochain message reçu est "4", on rallume le laser
-					RETI
+					SJMP		fin_IT_Timer0
+int_delai_balise:
+					DJNZ		CPT_INT,fin_IT_Timer0
+					CLR		TR0					;On arrête le timer0
+					MOV		TH0,#00h
+					MOV		TL0,#00h				;On remet le timer à 0 pour la routine Attente
+					MOV		IE,#00h				;Désactivation de l'interruption
+					SETB		allow_4
+									
+fin_IT_Timer0:	RETI
 
 					$if (0)					
 ;______________________________________________________________________

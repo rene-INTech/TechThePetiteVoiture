@@ -8,11 +8,11 @@ Dir1_init_L   	equ 			024h+10					;V0_Init_L = N_L + Nr	TODO: à ajuster
 Dir0_init_H  	equ 			0FCh						;TODO: à ajuster
 Dir0_init_L   	equ 			018h+10					;TODO: à ajuster
 Mot1_init_H		equ			0FAh
-Mot1_init_L		equ			0ECh+10					;1.3ms
+Mot1_init_L		equ			0ECh+10+100				;1.3ms -100 µs pour avancer moins vite
 Mot0_init_H		equ			0C0h
-Mot0_init_L		equ			0B8h+2
+Mot0_init_L		equ			0B8h+2-100				;+100 µs pour avancer moins vite
 
-PAS_dir			equ			10
+PAS_dir			equ			15
 PAS_mot			equ			10
 
 Min_dir1_H		equ			0FCh
@@ -24,10 +24,6 @@ Min_dir0_H		equ			0FEh
 Min_dir0_L		equ			00Ch+10
 Max_dir0_H		equ			0FAh
 Max_dir0_L		equ			024h+10
-Centre_dir1_H	equ			0FAh
-Centre_dir1_L	equ			024h+10
-Centre_dir0_H	equ			0FCh
-Centre_dir0_L	equ         018h+10
 Min_mot1_L		equ			0Ah+10						;TODO
 Min_mot1_H		equ			0FBh						;TODO
 Max_mot1_L		equ			088h+10
@@ -255,11 +251,10 @@ FSi_droit:
 Si_centre:	JB				Gauche,FSI_centre
 				JB				Droit,FSI_centre
 				
-				MOV			Dir1_L,#Centre_dir1_L
-				MOV			Dir1_H,#Centre_dir1_H
-				MOV			Dir0_L,#Centre_dir0_L
-				MOV			Dir0_H,#Centre_dir0_H
-				
+				MOV			Dir1_L,#Dir1_init_L
+				MOV			Dir1_H,#Dir1_init_H
+				MOV			Dir0_L,#Dir0_init_L
+				MOV			Dir0_H,#Dir0_init_H
 FSI_centre:
 Finsi_inf_sup:
 				RET
