@@ -43,6 +43,9 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
 | FLAG_D        |  bit  |       01h | Vaut 1 si on a déjà incrémenté le compteur D pour ce tour                                  |
 | FLAG_C        |  bit  |       02h | Vaut 1 si on a déjà incrémenté le compteur C pour ce tour                                  |
 | FLAG_G        |  bit  |       03h | Vaut 1 si on a déjà incrémenté le compteur G pour ce tour                                  |
+| allow_4 | bit | 04h | Vaut 1 is on autorise la réception de "4". Sinon, le Timer 0 est utilisé pour s'éloigner la balise de départ |
+| CPT_INT | octet | 7Ah | Compte les interruptions sur le Timer 0 le temps de s'eloigner de la balise de départ |
+
 #### Routines
 - `LCD_Init`:
     Initialise l'écran LCD
@@ -92,8 +95,13 @@ La pile se trouve dans la mémoire octets `SP = 0x2F` après l'initialisation.
 
 - `Balise_depart`:
     Routine à appeler à la première réception de chaque série de "0"
+    > Utilise `R2` comme compteur local <br>
     > Incrémente le compteur de tours<br>
     > Eteint le microcontrôleur après 3 tours
+
+- `Init_delai_4`:
+    Routine initialisant le timer 0 pour l'attente d'environ 6.5 s entre la réception du premier message de la balise de départ
+    et du premier de la balise cible.
  
 - `IT_Timer0`:
     Routine d'interruption du timer 0.

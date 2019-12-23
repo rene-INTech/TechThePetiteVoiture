@@ -8,6 +8,7 @@ debut:
 	(TCON)<-40h
 	(Sirene)<-0
 	(Laser)<-0
+	(Principal)<-0
 	(nb_tours)<-"0"
 	(nb_D)<-"0"
 	(nb_C)<-"0"
@@ -42,7 +43,7 @@ debut:
 					(Laser)<-1
 					(Sirene)<-1
 					(FLAG_4)<-1
-					LCD_CODE(8Fh)
+					LCD_CODE(adr_fin_l1)
 					LCD_DATA(00h)
 					
 					(TR0)<-0
@@ -50,7 +51,7 @@ debut:
 					(TF0)<-0
 					(IE)<-82h
 					(TR0)<-1
-			
+				Fin Si
 			"C":
 				Si (FLAG_4)=1 et (FLAG_C)=0:
 					(nb_C)<-(nb_C)+1
@@ -104,6 +105,23 @@ Fontion LCD_Init():
 	Load_CGRAM()
 Fin LCD_Init
 
+Fontion Load_CGRAM():
+	LCD_CODE(40h)
+	
+	Pour chaque carractère:
+		Pour chaque ligne:
+			LCD_DATA(ligne)
+		Fin Pour
+	Fin Pour
+Fin Load_CGRAM
+
+Fontion LCD_msg(msg):
+	Tant que ((msg)) != 0:
+		LCD_DATA( ((msg)) )
+		(msg)<-(msg)+1
+	Fin Tant que
+Fin LCD_msg
+
 Fontion LCD_CODE(code):
 	LCD_BF()
 	(LCD)<-code
@@ -132,6 +150,23 @@ Fontion LCD_BF():
 	Jusqu'à (BF) = 0
 	(E)<-0
 Fin LCD_BF
+
+Fonction Signature():
+	LCD_CODE(adr_ligne1)
+	LCD_msg(auteurs_msg1)
+	LCD_CODE(adr_ligne2)
+	LCD_msg(auteurs_msg2)
+	Attente_1S()
+	
+	Pour (decalage) allant de 24 à 0 par pas de -1:
+		Pour (nb_attentes) allant de 10 à 0 par pas de -1:
+			Attente()
+		Fin Pour
+		LCD_CODE(18h)
+	Fin Pour
+	
+	LCD_CODE(clear)
+Fin Signature
 
 Fontion Attente():
 	(TR0)<-0
@@ -162,9 +197,9 @@ Fontion Att_depart():
 	
 	(Principal)<-1
 	(msg_prec)<-(SBUF)
-	LCD_CODE(clear)
+	LCD_CODE(adr_ligne1)
 	LCD_msg(template_msg1)
-	LCD_CODE(C0h)
+	LCD_CODE(adr_ligne2)
 	LCD_msg(template_msg2)
 	(attente_4)<-1
 	Init_delai_4()	
@@ -176,14 +211,17 @@ Fontion Balise_depart():
 	
 	LCD_CODE(adr_tours)
 	LCD_DATA((nb_tours))
-	LCD_CODE(8Fh)
+	LCD_CODE(adr_fin_l1)
 	LCD_DATA(02h)
-	Attente_1S()
+	
+	Pour (compteur_local) allant de 5 à 0 par pas de -1:
+		Attente_1S()
+	Fin Pour
 	
 	Si (nb_tours) = "3":
-		LCD_CODE(80h)
+		LCD_CODE(adr_ligne1)
 		LCD_msg(shutdown_msg1)
-		LCD_CODE(C0h)
+		LCD_CODE(adr_ligne2)
 		LCD_msg(shutdown_msg2)
 		(PCON)<-02h
 	Fin Si
@@ -193,8 +231,8 @@ Fontion Balise_depart():
 	(FLAG_C)<-0
 	(FLAG_D)<-0
 	(FLAG_G)<-0
-	LCD_CODE(8Fh)
-	LCD_DATA(" 
+	LCD_CODE(adr_fin_l1)
+	LCD_DATA(" ")
 	Init_delai_4()
 Fin Balise_depart
 

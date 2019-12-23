@@ -102,7 +102,7 @@ SI_0:				CJNE		A,#"0",SI_4
 					JB			attente_4,to_defaut		;si on a passé la balise cible
 					LCALL		Balise_depart
 					LJMP		fin_SI
-to_defaut:		LJMP		defaut					
+to_defaut:		LJMP		defaut						;JB ne permet que les sauts courts, insuffisants pour rejoindre "defaut"					
 SI_4	:			CJNE		A,#"4",SI_C
 					;Si on a recu "4"
 					JNB		allow_4,SI_C
@@ -402,7 +402,7 @@ RPT_att_dec:	LCALL		Attente
 					DJNZ		R0,RPT_decalage
 					MOV		LCD,#clear
 					LCALL		LCD_code
-					RET
+Fin_Signature:	RET
 
 ;___________________________________________	
 ;Routine d'attente de 50ms
@@ -482,7 +482,10 @@ Balise_depart:
 					MOV		LCD,#02h					;carractère sablier
 					LCALL		LCD_DATA
 					
-					LCALL		Attente_1s
+					MOV		R2,#5
+Attente_5s:		LCALL		Attente_1s
+					DJNZ		R2, Attente_5s
+					
 SI_3_tours:		MOV		A,nb_tours				;Si on a fait 3 tours
 					CJNE		A,#"3",SINON_3_tours
 					MOV		LCD,#adr_ligne1		;On se place au premier carractère de la DDRAM
@@ -511,7 +514,8 @@ SINON_3_tours:	SETB		Principal			;Sinon,on repart
                			POP		Acc				;On restaure l'accumulateur 
                			RET
 ;____________________________________________________________________
-
+;Routine initialisant le timer 0 pour l'attente d'environ 6.5 s entre la réception du premier
+;message de la balise de départ et du premier de la balise cible.
 Init_delai_4:
 					CLR		TR0					;On arrête le Timer
 		      		MOV		TL0,#0				;1CM
